@@ -1,0 +1,513 @@
+{
+  "auth": {
+    "signin": {
+      "title": "Kirjaudu sisään",
+      "subtitle": "Tervetuloa takaisin",
+      "email": "Sähköposti",
+      "password": "Salasana",
+      "forgotPassword": "Unohditko salasanan?",
+      "signIn": "Kirjaudu sisään",
+      "noAccount": "Eikö sinulla ole tiliä?",
+      "signUp": "Luo tili",
+      "or": "tai",
+      "continueWithGoogle": "Jatka Googlella",
+      "errors": {
+        "invalidCredentials": "Virheellinen sähköposti tai salasana",
+        "emailRequired": "Sähköposti on pakollinen",
+        "passwordRequired": "Salasana on pakollinen"
+      },
+      "loading": "Kirjaudutaan...",
+      "loginFailed": "Kirjautuminen epäonnistui",
+      "registrationFailed": "Rekisteröinti epäonnistui",
+      "passwordResetFailed": "Salasanan nollaus epäonnistui",
+      "passwordChangedSuccessfully": "Salasana vaihdettu onnistuneesti"
+    },
+    "signup": {
+      "title": "Luo tili",
+      "subtitle": "Aloita matkasi Vaikun kanssa",
+      "firstName": "Etunimi",
+      "lastName": "Sukunimi",
+      "email": "Sähköposti",
+      "password": "Salasana",
+      "confirmPassword": "Vahvista salasana",
+      "createAccount": "Luo tili",
+      "alreadyHaveAccount": "Onko sinulla jo tili?",
+      "signIn": "Kirjaudu sisään",
+      "errors": {
+        "firstNameRequired": "Etunimi on pakollinen",
+        "lastNameRequired": "Sukunimi on pakollinen",
+        "emailRequired": "Sähköposti on pakollinen",
+        "emailInvalid": "Virheellinen sähköpostiosoite",
+        "passwordRequired": "Salasana on pakollinen",
+        "passwordTooShort": "Salasanan tulee olla vähintään 8 merkkiä",
+        "passwordsDoNotMatch": "Salasanat eivät täsmää"
+      }
+    },
+    "forgotPassword": {
+      "title": "Unohditko salasanan?",
+      "subtitle": "Syötä sähköpostiosoitteesi ja lähetämme palautuslinkin",
+      "email": "Sähköposti",
+      "sendResetLink": "Lähetä palautuslinkki",
+      "backToSignIn": "Takaisin kirjautumiseen",
+      "checkEmail": "Tarkista sähköpostisi",
+      "resetLinkSent": "Salasanan palautuslinkki on lähetetty",
+      "errors": {
+        "emailRequired": "Sähköposti on pakollinen",
+        "emailInvalid": "Virheellinen sähköpostiosoite",
+        "userNotFound": "Käyttäjää ei löydy tällä sähköpostiosoitteella"
+      }
+    },
+    "error": {
+      "title": "Virhe",
+      "defaultMessage": "Tapahtui odottamaton virhe. Yritä uudelleen.",
+      "backToSignIn": "Takaisin kirjautumiseen",
+      "loginFailed": "Kirjautuminen epäonnistui",
+      "accountCreationFailed": "Tilin luonti epäonnistui",
+      "accountExists": "Tili tällä sähköpostiosoitteella on jo olemassa",
+      "loginRequired": "Kirjautuminen vaaditaan",
+      "tryAgain": "Yritä uudelleen."
+    }
+  },
+  "common": {
+    "save": "Tallenna",
+    "cancel": "Peruuta",
+    "delete": "Poista",
+    "edit": "Muokkaa",
+    "create": "Luo",
+    "close": "Sulje",
+    "confirm": "Vahvista",
+    "search": "Haku",
+    "filter": "Suodata",
+    "loading": "Ladataan...",
+    "noData": "Ei tuloksia",
+    "actions": "Toiminnot",
+    "view": "Näytä",
+    "add": "Lisää",
+    "remove": "Poista",
+    "select": "Valitse",
+    "back": "Takaisin",
+    "next": "Seuraava",
+    "yes": "Kyllä",
+    "no": "Ei",
+    "all": "Kaikki",
+    "none": "Ei mitään",
+    "name": "Nimi",
+    "email": "Sähköposti",
+    "phone": "Puhelin",
+    "address": "Osoite",
+    "website": "Verkkosivu",
+    "notes": "Muistiinpanot",
+    "date": "Päivämäärä",
+    "status": "Tila",
+    "type": "Tyyppi",
+    "owner": "Omistaja",
+    "createdAt": "Luotu",
+    "updatedAt": "Päivitetty",
+    "currency": "Valuutta",
+    "amount": "Summa",
+    "description": "Kuvaus",
+    "tags": "Tunnisteet",
+    "assignedTo": "Vastuuhenkilö",
+    "dueDate": "Eräpäivä"
+  },
+  "crm": {
+    "title": "CRM",
+    "filters": {
+      "allUsers": "Kaikki käyttäjät"
+    },
+    "import": {
+      "title": "Tuo kontakteja",
+      "description": "Tuo kontakteja ja yrityksiä CSV-tiedostosta (esim. Instantly-kampanjavienti).",
+      "dropzone": "Vedä CSV-tiedosto tähän tai",
+      "browse": "selaa tiedostoja",
+      "preview": "Esikatselu",
+      "previewDesc": "Näytetään ensimmäiset 5 riviä",
+      "rows": "riviä löydetty",
+      "importBtn": "Tuo kontaktit",
+      "importing": "Tuodaan...",
+      "result": "Tuonti valmis",
+      "created": "Luotu",
+      "updated": "Päivitetty",
+      "skipped": "Ohitettu",
+      "reset": "Tuo uusi tiedosto",
+      "errorNoFile": "Valitse ensin CSV-tiedosto",
+      "errorParse": "CSV-tiedoston lukeminen epäonnistui",
+      "detectedCols": "Tunnistetut sarakkeet"
+    },
+    "integrations": {
+      "title": "Integraatiot",
+      "google": {
+        "title": "Google-integraatio",
+        "description": "Yhdistä Gmail ja Google Kalenteri nähdäksesi sähköpostit ja tapaamiset automaattisesti CRM:ssä.",
+        "connect": "Yhdistä Google",
+        "connected": "Yhdistetty",
+        "notConnected": "Ei yhdistetty",
+        "disconnect": "Katkaise yhteys",
+        "connectSuccess": "Google yhdistetty onnistuneesti",
+        "connectError": "Google-yhteyden muodostaminen epäonnistui",
+        "disconnectSuccess": "Google-yhteys katkaistu",
+        "connectPrompt": "Yhdistä Google-tilisi asetuksista nähdäksesi sähköpostit automaattisesti.",
+        "gmailScope": "Näytä yhteyshenkilöihin liittyvät sähköpostit",
+        "calendarScope": "Näytä yritykseen liittyvät kalenteritapaamiset",
+        "noEmails": "Ei löydettyjä sähköposteja",
+        "calendarEvents": "Google Kalenteri",
+        "noCalendarEvents": "Ei löydettyjä kalenteritapaamisia",
+        "setupTitle": "Käyttöönotto-ohje",
+        "callbackLabel": "Lisää tämä osoite Google Cloud Console -projektiisi sallituiksi uudelleenohjauskohteiksi:",
+        "step1": "Avaa Google Cloud Console ja valitse projektisi (tai luo uusi)",
+        "step2": "Ota käyttöön Gmail API ja Google Calendar API",
+        "step3": "Mene Credentials → OAuth 2.0 Client IDs → lisää alla oleva callback-URL",
+        "step4": "Varmista, että GOOGLE_ID ja GOOGLE_SECRET on asetettu .env.local-tiedostossasi"
+      }
+    },
+    "sidebar": {
+      "companies": "Yritykset",
+      "contacts": "Yhteyshenkilöt",
+      "deals": "Kaupat",
+      "tasks": "Tehtävät",
+      "calls": "Puhelut",
+      "meetings": "Tapaamiset",
+      "activities": "Aktiviteetit",
+      "settings": "Asetukset"
+    },
+    "companies": {
+      "title": "Yritykset",
+      "newCompany": "Uusi yritys",
+      "searchPlaceholder": "Hae yrityksiä...",
+      "noCompanies": "Yrityksiä ei löydy",
+      "noCompaniesDesc": "Aloita luomalla ensimmäinen yritys.",
+      "columns": {
+        "name": "Yrityksen nimi",
+        "domain": "Verkkotunnus",
+        "phone": "Puhelin",
+        "owner": "Omistaja",
+        "stage": "Vaihe",
+        "industry": "Toimiala",
+        "createdAt": "Luotu"
+      },
+      "fields": {
+        "companyName": "Yrityksen nimi",
+        "domain": "Verkkotunnus / Verkkosivu",
+        "phone": "Puhelinnumero",
+        "email": "Sähköposti",
+        "industry": "Toimiala",
+        "size": "Yrityksen koko",
+        "lifecycleStage": "Elinkaaren vaihe",
+        "owner": "Omistaja",
+        "description": "Kuvaus",
+        "linkedinUrl": "LinkedIn-URL",
+        "annualRevenue": "Vuosiliikevaihto",
+        "address": "Osoite",
+        "city": "Kaupunki",
+        "country": "Maa"
+      },
+      "create": {
+        "title": "Luo yritys",
+        "success": "Yritys luotu"
+      },
+      "edit": {
+        "title": "Muokkaa yritystä",
+        "success": "Yritys päivitetty"
+      },
+      "delete": {
+        "confirm": "Haluatko varmasti poistaa tämän yrityksen?",
+        "success": "Yritys poistettu"
+      }
+    },
+    "contacts": {
+      "title": "Yhteyshenkilöt",
+      "newContact": "Uusi yhteyshenkilö",
+      "searchPlaceholder": "Hae yhteyshenkilöitä...",
+      "noContacts": "Yhteyshenkilöitä ei löydy",
+      "noContactsDesc": "Lisää ensimmäinen yhteyshenkilö.",
+      "columns": {
+        "name": "Nimi",
+        "email": "Sähköposti",
+        "phone": "Puhelin",
+        "company": "Yritys",
+        "jobTitle": "Tehtävänimike",
+        "owner": "Omistaja",
+        "createdAt": "Luotu"
+      },
+      "fields": {
+        "firstName": "Etunimi",
+        "lastName": "Sukunimi",
+        "email": "Sähköposti",
+        "phone": "Puhelin",
+        "mobilePhone": "Matkapuhelin",
+        "jobTitle": "Tehtävänimike",
+        "company": "Yritys",
+        "lifecycleStage": "Elinkaaren vaihe",
+        "linkedinUrl": "LinkedIn-URL",
+        "owner": "Omistaja"
+      },
+      "create": {
+        "title": "Luo yhteyshenkilö",
+        "success": "Yhteyshenkilö luotu"
+      },
+      "edit": {
+        "title": "Muokkaa yhteyshenkilöä",
+        "success": "Yhteyshenkilö päivitetty"
+      }
+    },
+    "deals": {
+      "title": "Kaupat",
+      "newDeal": "Uusi kauppa",
+      "searchPlaceholder": "Hae kauppoja...",
+      "noDeals": "Kauppoja ei löydy",
+      "noDealsDesc": "Luo ensimmäinen kauppa.",
+      "totalValue": "Kokonaisarvo",
+      "viewKanban": "Kanban",
+      "viewList": "Lista",
+      "stages": {
+        "appointment-scheduled": "Tapaaminen sovittu",
+        "qualified-to-buy": "Kvalifioitu ostaja",
+        "presentation-scheduled": "Esittely sovittu",
+        "decision-maker-bought-in": "Päätöksentekijä mukana",
+        "contract-sent": "Sopimus lähetetty",
+        "closed-won": "Voitettu",
+        "closed-lost": "Hävitty"
+      },
+      "fields": {
+        "title": "Kaupan nimi",
+        "amount": "Summa",
+        "stage": "Vaihe",
+        "closeDate": "Sulkemispäivä",
+        "probability": "Todennäköisyys (%)",
+        "company": "Yritys",
+        "contact": "Yhteyshenkilö",
+        "owner": "Omistaja",
+        "description": "Kuvaus",
+        "lostReason": "Häviämisen syy"
+      },
+      "create": {
+        "title": "Luo kauppa",
+        "success": "Kauppa luotu"
+      },
+      "edit": {
+        "title": "Muokkaa kauppaa",
+        "success": "Kauppa päivitetty"
+      },
+      "delete": {
+        "confirm": "Haluatko varmasti poistaa tämän kaupan?",
+        "success": "Kauppa poistettu"
+      }
+    },
+    "tasks": {
+      "title": "Tehtävät",
+      "newTask": "Uusi tehtävä",
+      "searchPlaceholder": "Hae tehtäviä...",
+      "noTasks": "Tehtäviä ei löydy",
+      "noTasksDesc": "Luo ensimmäinen tehtävä.",
+      "overdue": "Myöhässä",
+      "upcoming": "Tulevat",
+      "completed": "Suoritettu",
+      "markComplete": "Merkitse suoritetuksi",
+      "markIncomplete": "Merkitse kesken",
+      "sections": {
+        "overdue": "Myöhässä",
+        "upcoming": "Tulevat",
+        "noDate": "Ei eräpäivää",
+        "completed": "Suoritettu"
+      },
+      "status": {
+        "not-started": "Ei aloitettu",
+        "in-progress": "Käynnissä",
+        "completed": "Suoritettu",
+        "deferred": "Lykätty"
+      },
+      "priority": {
+        "low": "Matala",
+        "medium": "Normaali",
+        "high": "Korkea"
+      },
+      "type": {
+        "call": "Puhelu",
+        "email": "Sähköposti",
+        "meeting": "Tapaaminen",
+        "task": "Tehtävä",
+        "follow-up": "Seuranta",
+        "deadline": "Deadline"
+      },
+      "fields": {
+        "title": "Tehtävän otsikko",
+        "notes": "Muistiinpanot",
+        "dueDate": "Eräpäivä",
+        "status": "Tila",
+        "priority": "Prioriteetti",
+        "type": "Tyyppi",
+        "assignedTo": "Vastuuhenkilö",
+        "company": "Yritys",
+        "contact": "Yhteyshenkilö",
+        "deal": "Kauppa"
+      },
+      "create": {
+        "title": "Luo tehtävä",
+        "success": "Tehtävä luotu"
+      },
+      "edit": {
+        "title": "Muokkaa tehtävää",
+        "success": "Tehtävä päivitetty"
+      }
+    },
+    "calls": {
+      "title": "Puhelut",
+      "newCall": "Kirjaa puhelu",
+      "noCallsDesc": "Ei kirjattuja puheluita.",
+      "direction": {
+        "inbound": "Saapuva",
+        "outbound": "Lähtevä"
+      },
+      "outcome": {
+        "connected": "Yhteys muodostettu",
+        "left-voicemail": "Jätetty viesti",
+        "no-answer": "Ei vastattu",
+        "busy": "Varattu",
+        "wrong-number": "Väärä numero"
+      },
+      "fields": {
+        "title": "Puhelun otsikko",
+        "callDate": "Puhelun päivämäärä",
+        "duration": "Kesto (min)",
+        "direction": "Suunta",
+        "outcome": "Tulos",
+        "notes": "Muistiinpanot",
+        "company": "Yritys",
+        "contact": "Yhteyshenkilö"
+      },
+      "create": {
+        "title": "Kirjaa puhelu",
+        "success": "Puhelu kirjattu"
+      }
+    },
+    "meetings": {
+      "title": "Tapaamiset",
+      "newMeeting": "Kirjaa tapaaminen",
+      "noMeetingsDesc": "Ei kirjattuja tapaamisia.",
+      "type": {
+        "in-person": "Kasvotusten",
+        "video": "Videotapaaminen",
+        "phone": "Puhelintapaaminen"
+      },
+      "outcome": {
+        "completed": "Pidetty",
+        "no-show": "Ei saapunut",
+        "cancelled": "Peruttu",
+        "rescheduled": "Siirretty",
+        "scheduled": "Sovittu"
+      },
+      "fields": {
+        "title": "Tapaamisen otsikko",
+        "meetingDate": "Tapaamisen aika",
+        "duration": "Kesto (min)",
+        "location": "Sijainti / Linkki",
+        "type": "Tyyppi",
+        "outcome": "Tulos",
+        "notes": "Muistiinpanot",
+        "company": "Yritys",
+        "contact": "Yhteyshenkilö",
+        "subtype": "Tapaamisen tyyppi",
+        "contacts": "Osallistujat",
+        "deals": "Liitetyt diilit"
+      },
+      "create": {
+        "title": "Kirjaa tapaaminen",
+        "success": "Tapaaminen kirjattu"
+      },
+      "edit": {
+        "title": "Muokkaa tapaamista",
+        "success": "Tapaaminen päivitetty"
+      },
+      "subtype": {
+        "first-meeting": "Ensitapaaminen",
+        "discovery": "Kartoitustapaaminen",
+        "demo": "Demo / Esittely",
+        "follow-up": "Seurantatapaaminen",
+        "decision": "Päätöstapaaminen",
+        "other": "Muu tapaaminen"
+      }
+    },
+    "activities": {
+      "title": "Aktiviteetit",
+      "noActivities": "Ei aktiviteettejä",
+      "types": {
+        "note": "Muistiinpano",
+        "email": "Sähköposti",
+        "call": "Puhelu",
+        "meeting": "Tapaaminen",
+        "task": "Tehtävä",
+        "deal": "Kauppa",
+        "company": "Yritys",
+        "contact": "Yhteyshenkilö"
+      },
+      "addNote": "Lisää muistiinpano",
+      "notePlaceholder": "Kirjoita muistiinpano...",
+      "saveNote": "Tallenna muistiinpano"
+    },
+    "company": {
+      "tabs": {
+        "activity": "Aktiviteetti",
+        "notes": "Muistiinpanot",
+        "emails": "Sähköpostit",
+        "calls": "Puhelut",
+        "tasks": "Tehtävät",
+        "meetings": "Tapaamiset"
+      },
+      "about": "Tietoa yrityksestä",
+      "contacts": "Yhteyshenkilöt",
+      "deals": "Kaupat",
+      "addContact": "Lisää yhteyshenkilö",
+      "addDeal": "Lisää kauppa",
+      "viewAllContacts": "Näytä kaikki yhteyshenkilöt",
+      "actions": {
+        "note": "Muistiinpano",
+        "email": "Sähköposti",
+        "call": "Puhelu",
+        "task": "Tehtävä",
+        "meeting": "Tapaaminen"
+      },
+      "viewAll": "Näytä kaikki",
+      "viewAllEmails": "sähköpostia lisää"
+    },
+    "lifecycleStage": {
+      "lead": "Liidi",
+      "prospect": "Prospekti",
+      "opportunity": "Mahdollisuus",
+      "customer": "Asiakas",
+      "evangelist": "Suosittelija",
+      "other": "Muu"
+    },
+    "outreach": {
+      "label": "Sähköpostiviesti",
+      "campaign": "Kampanja",
+      "contacted": "Lähetetty",
+      "interested": "Kiinnostunut",
+      "not_interested": "Ei kiinnostunut",
+      "bounced": "Ei toimitettu",
+      "replied": "Vastannut",
+      "unsubscribed": "Peruuttanut"
+    },
+    "companySize": {
+      "1-10": "1–10 henkilöä",
+      "11-50": "11–50 henkilöä",
+      "51-200": "51–200 henkilöä",
+      "201-500": "201–500 henkilöä",
+      "501-1000": "501–1000 henkilöä",
+      "1000+": "Yli 1000 henkilöä"
+    },
+    "deal": {
+      "tabs": {
+        "overview": "Yleiskatsaus",
+        "meetings": "Tapaamiset",
+        "tasks": "Tehtävät",
+        "notes": "Muistiinpanot"
+      },
+      "upcomingMeetings": "Tulevat tapaamiset",
+      "fields": {
+        "amount": "Arvo",
+        "closeDate": "Päätöspäivä",
+        "probability": "Todennäköisyys"
+      }
+    }
+  }
+}

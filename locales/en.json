@@ -1,0 +1,513 @@
+{
+  "auth": {
+    "signin": {
+      "title": "Sign in",
+      "subtitle": "Welcome back",
+      "email": "Email",
+      "password": "Password",
+      "forgotPassword": "Forgot your password?",
+      "signIn": "Sign in",
+      "noAccount": "Don't have an account?",
+      "signUp": "Create account",
+      "or": "or",
+      "continueWithGoogle": "Continue with Google",
+      "errors": {
+        "invalidCredentials": "Invalid email or password",
+        "emailRequired": "Email is required",
+        "passwordRequired": "Password is required"
+      },
+      "loading": "Signing in...",
+      "loginFailed": "Sign in failed",
+      "registrationFailed": "Registration failed",
+      "passwordResetFailed": "Password reset failed",
+      "passwordChangedSuccessfully": "Password changed successfully"
+    },
+    "signup": {
+      "title": "Create account",
+      "subtitle": "Start your journey with Vaiku",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "createAccount": "Create account",
+      "alreadyHaveAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "errors": {
+        "firstNameRequired": "First name is required",
+        "lastNameRequired": "Last name is required",
+        "emailRequired": "Email is required",
+        "emailInvalid": "Invalid email address",
+        "passwordRequired": "Password is required",
+        "passwordTooShort": "Password must be at least 8 characters",
+        "passwordsDoNotMatch": "Passwords do not match"
+      }
+    },
+    "forgotPassword": {
+      "title": "Forgot your password?",
+      "subtitle": "Enter your email and we'll send you a reset link",
+      "email": "Email",
+      "sendResetLink": "Send reset link",
+      "backToSignIn": "Back to sign in",
+      "checkEmail": "Check your email",
+      "resetLinkSent": "Password reset link has been sent to your email",
+      "errors": {
+        "emailRequired": "Email is required",
+        "emailInvalid": "Invalid email address",
+        "userNotFound": "No user found with this email"
+      }
+    },
+    "error": {
+      "title": "Error",
+      "defaultMessage": "An unexpected error occurred. Please try again.",
+      "backToSignIn": "Back to sign in",
+      "loginFailed": "Sign in failed",
+      "accountCreationFailed": "Account creation failed",
+      "accountExists": "An account with this email already exists",
+      "loginRequired": "Sign in required",
+      "tryAgain": "Please try again."
+    }
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "close": "Close",
+    "confirm": "Confirm",
+    "search": "Search",
+    "filter": "Filter",
+    "loading": "Loading...",
+    "noData": "No data found",
+    "actions": "Actions",
+    "view": "View",
+    "add": "Add",
+    "remove": "Remove",
+    "select": "Select",
+    "back": "Back",
+    "next": "Next",
+    "yes": "Yes",
+    "no": "No",
+    "all": "All",
+    "none": "None",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "website": "Website",
+    "notes": "Notes",
+    "date": "Date",
+    "status": "Status",
+    "type": "Type",
+    "owner": "Owner",
+    "createdAt": "Created",
+    "updatedAt": "Updated",
+    "currency": "Currency",
+    "amount": "Amount",
+    "description": "Description",
+    "tags": "Tags",
+    "assignedTo": "Assigned to",
+    "dueDate": "Due date"
+  },
+  "crm": {
+    "title": "CRM",
+    "filters": {
+      "allUsers": "All users"
+    },
+    "import": {
+      "title": "Import Contacts",
+      "description": "Import contacts and companies from a CSV file (e.g. Instantly campaign export).",
+      "dropzone": "Drag a CSV file here or",
+      "browse": "browse files",
+      "preview": "Preview",
+      "previewDesc": "Showing first 5 rows",
+      "rows": "rows found",
+      "importBtn": "Import Contacts",
+      "importing": "Importing...",
+      "result": "Import complete",
+      "created": "Created",
+      "updated": "Updated",
+      "skipped": "Skipped",
+      "reset": "Import another file",
+      "errorNoFile": "Please select a CSV file first",
+      "errorParse": "Failed to parse CSV file",
+      "detectedCols": "Detected columns"
+    },
+    "integrations": {
+      "title": "Integrations",
+      "google": {
+        "title": "Google Integration",
+        "description": "Connect Gmail and Google Calendar to automatically see emails and meetings in the CRM.",
+        "connect": "Connect Google",
+        "connected": "Connected",
+        "notConnected": "Not connected",
+        "disconnect": "Disconnect",
+        "connectSuccess": "Google connected successfully",
+        "connectError": "Failed to connect Google",
+        "disconnectSuccess": "Google disconnected",
+        "connectPrompt": "Connect your Google account in settings to see emails automatically.",
+        "gmailScope": "View emails related to contacts",
+        "calendarScope": "View calendar events related to the company",
+        "noEmails": "No emails found",
+        "calendarEvents": "Google Calendar",
+        "noCalendarEvents": "No calendar events found",
+        "setupTitle": "Setup guide",
+        "callbackLabel": "Add this URL as an authorized redirect URI in your Google Cloud Console project:",
+        "step1": "Open Google Cloud Console and select your project (or create a new one)",
+        "step2": "Enable the Gmail API and Google Calendar API",
+        "step3": "Go to Credentials → OAuth 2.0 Client IDs → add the callback URL below",
+        "step4": "Make sure GOOGLE_ID and GOOGLE_SECRET are set in your .env.local file"
+      }
+    },
+    "sidebar": {
+      "companies": "Companies",
+      "contacts": "Contacts",
+      "deals": "Deals",
+      "tasks": "Tasks",
+      "calls": "Calls",
+      "meetings": "Meetings",
+      "activities": "Activities",
+      "settings": "Settings"
+    },
+    "companies": {
+      "title": "Companies",
+      "newCompany": "New company",
+      "searchPlaceholder": "Search companies...",
+      "noCompanies": "No companies found",
+      "noCompaniesDesc": "Get started by creating your first company.",
+      "columns": {
+        "name": "Company name",
+        "domain": "Domain",
+        "phone": "Phone",
+        "owner": "Owner",
+        "stage": "Stage",
+        "industry": "Industry",
+        "createdAt": "Created"
+      },
+      "fields": {
+        "companyName": "Company name",
+        "domain": "Domain / Website",
+        "phone": "Phone number",
+        "email": "Email",
+        "industry": "Industry",
+        "size": "Company size",
+        "lifecycleStage": "Lifecycle stage",
+        "owner": "Owner",
+        "description": "Description",
+        "linkedinUrl": "LinkedIn URL",
+        "annualRevenue": "Annual revenue",
+        "address": "Address",
+        "city": "City",
+        "country": "Country"
+      },
+      "create": {
+        "title": "Create company",
+        "success": "Company created"
+      },
+      "edit": {
+        "title": "Edit company",
+        "success": "Company updated"
+      },
+      "delete": {
+        "confirm": "Are you sure you want to delete this company?",
+        "success": "Company deleted"
+      }
+    },
+    "contacts": {
+      "title": "Contacts",
+      "newContact": "New contact",
+      "searchPlaceholder": "Search contacts...",
+      "noContacts": "No contacts found",
+      "noContactsDesc": "Add your first contact.",
+      "columns": {
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "company": "Company",
+        "jobTitle": "Job title",
+        "owner": "Owner",
+        "createdAt": "Created"
+      },
+      "fields": {
+        "firstName": "First name",
+        "lastName": "Last name",
+        "email": "Email",
+        "phone": "Phone",
+        "mobilePhone": "Mobile phone",
+        "jobTitle": "Job title",
+        "company": "Company",
+        "lifecycleStage": "Lifecycle stage",
+        "linkedinUrl": "LinkedIn URL",
+        "owner": "Owner"
+      },
+      "create": {
+        "title": "Create contact",
+        "success": "Contact created"
+      },
+      "edit": {
+        "title": "Edit contact",
+        "success": "Contact updated"
+      }
+    },
+    "deals": {
+      "title": "Deals",
+      "newDeal": "New deal",
+      "searchPlaceholder": "Search deals...",
+      "noDeals": "No deals found",
+      "noDealsDesc": "Create your first deal.",
+      "totalValue": "Total value",
+      "viewKanban": "Kanban",
+      "viewList": "List",
+      "stages": {
+        "appointment-scheduled": "Appointment Scheduled",
+        "qualified-to-buy": "Qualified to Buy",
+        "presentation-scheduled": "Presentation Scheduled",
+        "decision-maker-bought-in": "Decision Maker Bought-In",
+        "contract-sent": "Contract Sent",
+        "closed-won": "Closed Won",
+        "closed-lost": "Closed Lost"
+      },
+      "fields": {
+        "title": "Deal name",
+        "amount": "Amount",
+        "stage": "Stage",
+        "closeDate": "Close date",
+        "probability": "Probability (%)",
+        "company": "Company",
+        "contact": "Contact",
+        "owner": "Owner",
+        "description": "Description",
+        "lostReason": "Lost reason"
+      },
+      "create": {
+        "title": "Create deal",
+        "success": "Deal created"
+      },
+      "edit": {
+        "title": "Edit deal",
+        "success": "Deal updated"
+      },
+      "delete": {
+        "confirm": "Are you sure you want to delete this deal?",
+        "success": "Deal deleted"
+      }
+    },
+    "tasks": {
+      "title": "Tasks",
+      "newTask": "New task",
+      "searchPlaceholder": "Search tasks...",
+      "noTasks": "No tasks found",
+      "noTasksDesc": "Create your first task.",
+      "overdue": "Overdue",
+      "upcoming": "Upcoming",
+      "completed": "Completed",
+      "markComplete": "Mark complete",
+      "markIncomplete": "Mark incomplete",
+      "sections": {
+        "overdue": "Overdue",
+        "upcoming": "Upcoming",
+        "noDate": "No due date",
+        "completed": "Completed"
+      },
+      "status": {
+        "not-started": "Not started",
+        "in-progress": "In progress",
+        "completed": "Completed",
+        "deferred": "Deferred"
+      },
+      "priority": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High"
+      },
+      "type": {
+        "call": "Call",
+        "email": "Email",
+        "meeting": "Meeting",
+        "task": "Task",
+        "follow-up": "Follow-up",
+        "deadline": "Deadline"
+      },
+      "fields": {
+        "title": "Task title",
+        "notes": "Notes",
+        "dueDate": "Due date",
+        "status": "Status",
+        "priority": "Priority",
+        "type": "Type",
+        "assignedTo": "Assigned to",
+        "company": "Company",
+        "contact": "Contact",
+        "deal": "Deal"
+      },
+      "create": {
+        "title": "Create task",
+        "success": "Task created"
+      },
+      "edit": {
+        "title": "Edit task",
+        "success": "Task updated"
+      }
+    },
+    "calls": {
+      "title": "Calls",
+      "newCall": "Log a call",
+      "noCallsDesc": "No calls logged yet.",
+      "direction": {
+        "inbound": "Inbound",
+        "outbound": "Outbound"
+      },
+      "outcome": {
+        "connected": "Connected",
+        "left-voicemail": "Left voicemail",
+        "no-answer": "No answer",
+        "busy": "Busy",
+        "wrong-number": "Wrong number"
+      },
+      "fields": {
+        "title": "Call title",
+        "callDate": "Call date",
+        "duration": "Duration (min)",
+        "direction": "Direction",
+        "outcome": "Outcome",
+        "notes": "Notes",
+        "company": "Company",
+        "contact": "Contact"
+      },
+      "create": {
+        "title": "Log a call",
+        "success": "Call logged"
+      }
+    },
+    "meetings": {
+      "title": "Meetings",
+      "newMeeting": "Log a meeting",
+      "noMeetingsDesc": "No meetings logged yet.",
+      "type": {
+        "in-person": "In person",
+        "video": "Video call",
+        "phone": "Phone call"
+      },
+      "outcome": {
+        "completed": "Completed",
+        "no-show": "No show",
+        "cancelled": "Cancelled",
+        "rescheduled": "Rescheduled",
+        "scheduled": "Scheduled"
+      },
+      "fields": {
+        "title": "Meeting title",
+        "meetingDate": "Meeting date",
+        "duration": "Duration (min)",
+        "location": "Location / Link",
+        "type": "Type",
+        "outcome": "Outcome",
+        "notes": "Notes",
+        "company": "Company",
+        "contact": "Contact",
+        "subtype": "Meeting Type",
+        "contacts": "Attendees",
+        "deals": "Linked Deals"
+      },
+      "create": {
+        "title": "Log a meeting",
+        "success": "Meeting logged"
+      },
+      "edit": {
+        "title": "Edit meeting",
+        "success": "Meeting updated"
+      },
+      "subtype": {
+        "first-meeting": "First Meeting",
+        "discovery": "Discovery Call",
+        "demo": "Demo / Presentation",
+        "follow-up": "Follow-up",
+        "decision": "Decision Meeting",
+        "other": "Other"
+      }
+    },
+    "activities": {
+      "title": "Activities",
+      "noActivities": "No activities yet",
+      "types": {
+        "note": "Note",
+        "email": "Email",
+        "call": "Call",
+        "meeting": "Meeting",
+        "task": "Task",
+        "deal": "Deal",
+        "company": "Company",
+        "contact": "Contact"
+      },
+      "addNote": "Add note",
+      "notePlaceholder": "Write a note...",
+      "saveNote": "Save note"
+    },
+    "company": {
+      "tabs": {
+        "activity": "Activity",
+        "notes": "Notes",
+        "emails": "Emails",
+        "calls": "Calls",
+        "tasks": "Tasks",
+        "meetings": "Meetings"
+      },
+      "about": "About this company",
+      "contacts": "Contacts",
+      "deals": "Deals",
+      "addContact": "Add contact",
+      "addDeal": "Add deal",
+      "viewAllContacts": "View all contacts",
+      "actions": {
+        "note": "Note",
+        "email": "Email",
+        "call": "Call",
+        "task": "Task",
+        "meeting": "Meeting"
+      },
+      "viewAll": "View all",
+      "viewAllEmails": "more emails"
+    },
+    "lifecycleStage": {
+      "lead": "Lead",
+      "prospect": "Prospect",
+      "opportunity": "Opportunity",
+      "customer": "Customer",
+      "evangelist": "Evangelist",
+      "other": "Other"
+    },
+    "outreach": {
+      "label": "Email outreach",
+      "campaign": "Campaign",
+      "contacted": "Emailed",
+      "interested": "Interested",
+      "not_interested": "Not Interested",
+      "bounced": "Bounced",
+      "replied": "Replied",
+      "unsubscribed": "Unsubscribed"
+    },
+    "companySize": {
+      "1-10": "1–10 employees",
+      "11-50": "11–50 employees",
+      "51-200": "51–200 employees",
+      "201-500": "201–500 employees",
+      "501-1000": "501–1000 employees",
+      "1000+": "1000+ employees"
+    },
+    "deal": {
+      "tabs": {
+        "overview": "Overview",
+        "meetings": "Meetings",
+        "tasks": "Tasks",
+        "notes": "Notes"
+      },
+      "upcomingMeetings": "Upcoming meetings",
+      "fields": {
+        "amount": "Amount",
+        "closeDate": "Close Date",
+        "probability": "Probability"
+      }
+    }
+  }
+}

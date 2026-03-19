@@ -84,9 +84,8 @@ const config = {
     main: "hsl(var(--p))", // Uses the primary color from the DaisyUI theme dynamically
   },
   auth: {
-    // REQUIRED — the path to log in users. It's use to protect private routes (like /dashboard). It's used in apiClient (/libs/api.js) upon 401 errors from our API
-    loginUrl: "/api/auth/signin",
-    callbackUrl: "/dashboard",
+    loginUrl: "/login",
+    callbackUrl: "/dashboard/crm",
   },
 };
 
