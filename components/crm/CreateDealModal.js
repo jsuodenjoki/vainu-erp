@@ -5,8 +5,8 @@ import { useI18n } from "@/components/I18nProvider";
 import ModalBase from "@/components/crm/ModalBase";
 
 const STAGES = [
-  "appointment-scheduled", "qualified-to-buy", "presentation-scheduled",
-  "decision-maker-bought-in", "contract-sent", "closed-won", "closed-lost",
+  "appointment-scheduled", "follow-up", "waiting-offer",
+  "offer-sent", "contract-sent", "closed-won", "closed-lost",
 ];
 
 export default function CreateDealModal({ companyId, companyName, initialStage, onClose, onCreated }) {

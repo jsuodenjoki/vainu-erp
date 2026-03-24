@@ -30,6 +30,7 @@ const companySchema = new mongoose.Schema(
     owner: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     tags: [{ type: String }],
     linkedinUrl: { type: String },
+    businessId: { type: String, trim: true }, // Y-tunnus / Business ID
     notes: { type: String },
     workspace: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },

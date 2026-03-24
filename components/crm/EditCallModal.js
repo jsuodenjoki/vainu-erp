@@ -8,62 +8,51 @@ import MultiPicker from "@/components/crm/MultiPicker";
 const DIRECTIONS = ["outbound", "inbound"];
 const OUTCOMES = ["connected", "left-voicemail", "no-answer", "busy", "wrong-number"];
 
-export default function CreateCallModal({ companyId, companyName, contactId, dealId, onClose, onCreated }) {
+export default function EditCallModal({ call, onClose, onUpdated }) {
   const { t } = useI18n();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [companies, setCompanies] = useState([]);
   const [contactOptions, setContactOptions] = useState([]);
   const [dealOptions, setDealOptions] = useState([]);
 
-  const now = new Date();
-  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-  const defaultDate = now.toISOString().slice(0, 16);
+  const toLocalDatetime = (dateStr) => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0, 16);
+  };
 
   const [form, setForm] = useState({
-    callDate: defaultDate,
-    duration: "",
-    direction: "outbound",
-    outcome: "connected",
-    notes: "",
-    company: companyId || "",
-    contacts: contactId ? [contactId] : [],
-    deals: dealId ? [dealId] : [],
+    callDate: toLocalDatetime(call.callDate),
+    duration: call.duration || "",
+    direction: call.direction || "outbound",
+    outcome: call.outcome || "connected",
+    notes: call.notes || "",
+    contacts: (call.contacts || []).map(c => c._id || c),
+    deals: (call.deals || []).map(d => d._id || d),
   });
 
-  // Load companies if not locked to one
-  useEffect(() => {
-    if (!companyId) {
-      fetch("/api/crm/companies?limit=100")
-        .then(r => r.json())
-        .then(d => setCompanies(d.companies || []))
-        .catch(() => {});
-    }
-  }, [companyId]);
+  const companyId = call.company?._id || call.company;
 
-  // Load contact options (filtered by company if set)
   useEffect(() => {
-    const compId = companyId || form.company;
-    const url = compId
-      ? `/api/crm/contacts?company=${compId}&limit=100`
-      : `/api/crm/contacts?limit=100`;
+    const url = companyId
+      ? `/api/crm/contacts?company=${companyId}&limit=100`
+      : "/api/crm/contacts?limit=100";
     fetch(url)
       .then(r => r.json())
       .then(d => setContactOptions((d.contacts || []).map(c => ({ _id: c._id, label: `${c.firstName} ${c.lastName}` }))))
       .catch(() => {});
-  }, [companyId, form.company]);
+  }, [companyId]);
 
-  // Load deal options (filtered by company if set)
   useEffect(() => {
-    const compId = companyId || form.company;
-    const url = compId
-      ? `/api/crm/deals?company=${compId}&limit=100`
-      : `/api/crm/deals?limit=100`;
+    const url = companyId
+      ? `/api/crm/deals?company=${companyId}&limit=100`
+      : "/api/crm/deals?limit=100";
     fetch(url)
       .then(r => r.json())
       .then(d => setDealOptions((d.deals || []).map(d => ({ _id: d._id, label: d.title }))))
       .catch(() => {});
-  }, [companyId, form.company]);
+  }, [companyId]);
 
   const handleChange = (e) => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
@@ -78,27 +67,26 @@ export default function CreateCallModal({ companyId, companyName, contactId, dea
         direction: form.direction,
         outcome: form.outcome,
         notes: form.notes,
-        company: form.company || undefined,
         contacts: form.contacts,
         deals: form.deals,
       };
-      const res = await fetch("/api/crm/calls", {
-        method: "POST",
+      const res = await fetch(`/api/crm/calls/${call._id}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error || "Failed to log call"); return; }
-      onCreated(data.call);
+      if (!res.ok) { setError(data.error || "Failed to update call"); return; }
+      onUpdated(data.call);
     } catch {
-      setError("Failed to log call");
+      setError("Failed to update call");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <ModalBase title={t("crm.calls.create.title")} onClose={onClose}>
+    <ModalBase title={t("crm.calls.edit.title")} onClose={onClose}>
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg px-3 py-2">{error}</div>
@@ -134,23 +122,6 @@ export default function CreateCallModal({ companyId, companyName, contactId, dea
           </div>
         </div>
 
-        {!companyId && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t("crm.calls.fields.company")}</label>
-            <select name="company" value={form.company} onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-              <option value="">{t("common.select")}</option>
-              {companies.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
-            </select>
-          </div>
-        )}
-        {companyId && companyName && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t("crm.calls.fields.company")}</label>
-            <input value={companyName} disabled className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-500" />
-          </div>
-        )}
-
         <MultiPicker
           label={t("crm.meetings.fields.contacts")}
           items={contactOptions}
@@ -177,7 +148,7 @@ export default function CreateCallModal({ companyId, companyName, contactId, dea
           <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg">{t("common.cancel")}</button>
           <button type="submit" disabled={loading}
             className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg disabled:opacity-50">
-            {loading ? t("common.loading") : t("common.create")}
+            {loading ? t("common.loading") : t("common.save")}
           </button>
         </div>
       </form>

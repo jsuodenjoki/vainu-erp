@@ -196,6 +196,7 @@
         "owner": "Owner",
         "description": "Description",
         "linkedinUrl": "LinkedIn URL",
+        "businessId": "Business ID (Y-tunnus)",
         "annualRevenue": "Annual revenue",
         "address": "Address",
         "city": "City",
@@ -261,9 +262,9 @@
       "viewList": "List",
       "stages": {
         "appointment-scheduled": "Appointment Scheduled",
-        "qualified-to-buy": "Qualified to Buy",
-        "presentation-scheduled": "Presentation Scheduled",
-        "decision-maker-bought-in": "Decision Maker Bought-In",
+        "follow-up": "Follow-up",
+        "waiting-offer": "Waiting for Offer",
+        "offer-sent": "Offer Sent",
         "contract-sent": "Contract Sent",
         "closed-won": "Closed Won",
         "closed-lost": "Closed Lost"
@@ -378,6 +379,10 @@
       "create": {
         "title": "Log a call",
         "success": "Call logged"
+      },
+      "edit": {
+        "title": "Edit call",
+        "success": "Call updated"
       }
     },
     "meetings": {

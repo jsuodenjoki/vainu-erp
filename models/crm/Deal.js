@@ -3,9 +3,9 @@ import toJSON from "../plugins/toJSON";
 
 const DEAL_STAGES = [
   "appointment-scheduled",
-  "qualified-to-buy",
-  "presentation-scheduled",
-  "decision-maker-bought-in",
+  "follow-up",
+  "waiting-offer",
+  "offer-sent",
   "contract-sent",
   "closed-won",
   "closed-lost",

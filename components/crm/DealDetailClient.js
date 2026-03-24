@@ -19,9 +19,9 @@ import CreateCallModal from "@/components/crm/CreateCallModal";
 
 const STAGE_COLORS = {
   "appointment-scheduled": "bg-blue-100 text-blue-700",
-  "qualified-to-buy": "bg-indigo-100 text-indigo-700",
-  "presentation-scheduled": "bg-purple-100 text-purple-700",
-  "decision-maker-bought-in": "bg-orange-100 text-orange-700",
+  "follow-up": "bg-indigo-100 text-indigo-700",
+  "waiting-offer": "bg-purple-100 text-purple-700",
+  "offer-sent": "bg-orange-100 text-orange-700",
   "contract-sent": "bg-yellow-100 text-yellow-700",
   "closed-won": "bg-green-100 text-green-700",
   "closed-lost": "bg-red-100 text-red-700",

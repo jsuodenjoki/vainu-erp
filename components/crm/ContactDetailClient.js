@@ -13,11 +13,19 @@ import {
   CheckIcon,
   UserIcon,
   PencilIcon,
+  XMarkIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
 import CreateTaskModal from "@/components/crm/CreateTaskModal";
 import CreateCallModal from "@/components/crm/CreateCallModal";
 import CreateMeetingModal from "@/components/crm/CreateMeetingModal";
 import EditMeetingModal from "@/components/crm/EditMeetingModal";
+import EditCallModal from "@/components/crm/EditCallModal";
+import EditTaskModal from "@/components/crm/EditTaskModal";
+import CallItem from "@/components/crm/CallItem";
+import MeetingItem from "@/components/crm/MeetingItem";
+import TaskItem from "@/components/crm/TaskItem";
+import ActivityItem from "@/components/crm/ActivityItem";
 
 const MEETING_OUTCOME_COLORS = {
   scheduled: "bg-blue-100 text-blue-700",
@@ -55,9 +63,9 @@ const OUTREACH_STATUS_STYLES = {
 
 const STAGE_COLORS = {
   "appointment-scheduled": "bg-blue-100 text-blue-700",
-  "qualified-to-buy": "bg-indigo-100 text-indigo-700",
-  "presentation-scheduled": "bg-purple-100 text-purple-700",
-  "decision-maker-bought-in": "bg-orange-100 text-orange-700",
+  "follow-up": "bg-indigo-100 text-indigo-700",
+  "waiting-offer": "bg-purple-100 text-purple-700",
+  "offer-sent": "bg-orange-100 text-orange-700",
   "contract-sent": "bg-yellow-100 text-yellow-700",
   "closed-won": "bg-green-100 text-green-700",
   "closed-lost": "bg-red-100 text-red-700",
@@ -84,11 +92,19 @@ export default function ContactDetailClient({ params }) {
   const [meetings, setMeetings] = useState(null);
   const [outreachActivities, setOutreachActivities] = useState(null);
 
+  // Inline field editing
+  const [editing, setEditing] = useState(null);
+  const [editVal, setEditVal] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [users, setUsers] = useState([]);
+
   // Modals
   const [showTask, setShowTask] = useState(false);
   const [showCall, setShowCall] = useState(false);
   const [showMeeting, setShowMeeting] = useState(false);
   const [editingMeeting, setEditingMeeting] = useState(null);
+  const [editingCall, setEditingCall] = useState(null);
+  const [editingTask, setEditingTask] = useState(null);
 
   const fetchContact = () => {
     fetch(`/api/crm/contacts/${id}`)
@@ -99,6 +115,43 @@ export default function ContactDetailClient({ params }) {
   };
 
   useEffect(() => { fetchContact(); }, [id]);
+
+  // Fetch users for owner select
+  useEffect(() => {
+    fetch("/api/crm/users")
+      .then(r => r.json())
+      .then(d => setUsers(d.users || []))
+      .catch(() => {});
+  }, []);
+
+  const startEdit = (field, rawValue) => {
+    setEditing(field);
+    setEditVal(rawValue ?? "");
+  };
+
+  const cancelEdit = () => { setEditing(null); setEditVal(""); };
+
+  const saveField = async (field, value) => {
+    if (saving) return;
+    setSaving(true);
+    // send null instead of "" for reference fields so Mongoose clears them
+    const finalValue = (field === "owner" && !value) ? null : value;
+    try {
+      await fetch(`/api/crm/contacts/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [field]: finalValue }),
+      });
+      setEditing(null);
+      setEditVal("");
+      fetchContact(); // refetch to get populated owner etc.
+      toast.success(t("crm.contacts.edit.success"));
+    } catch {
+      toast.error("Failed to save");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   useEffect(() => {
     fetch("/api/integrations/google/status")
@@ -219,6 +272,38 @@ export default function ContactDetailClient({ params }) {
     }
   };
 
+  const handleDeleteActivity = async (activityId) => {
+    try {
+      await fetch(`/api/crm/activities/${activityId}`, { method: "DELETE" });
+      setOutreachActivities(prev => (prev || []).filter(a => a._id !== activityId));
+    } catch { toast.error("Failed to delete"); }
+  };
+
+  const handleUpdatedActivity = (updated) => {
+    setOutreachActivities(prev => (prev || []).map(a => a._id === updated._id ? { ...a, ...updated } : a));
+  };
+
+  const handleDeleteCall = async (callId) => {
+    try {
+      await fetch(`/api/crm/calls/${callId}`, { method: "DELETE" });
+      setCalls(null);
+    } catch { toast.error("Failed to delete"); }
+  };
+
+  const handleDeleteMeeting = async (meetingId) => {
+    try {
+      await fetch(`/api/crm/meetings/${meetingId}`, { method: "DELETE" });
+      setMeetings(null);
+    } catch { toast.error("Failed to delete"); }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    try {
+      await fetch(`/api/crm/tasks/${taskId}`, { method: "DELETE" });
+      setTasks(null);
+    } catch { toast.error("Failed to delete"); }
+  };
+
   if (loading) return (
     <div className="flex items-center justify-center h-full">
       <div className="animate-spin h-8 w-8 border-4 border-indigo-600 border-t-transparent rounded-full" />
@@ -254,15 +339,67 @@ export default function ContactDetailClient({ params }) {
             {contact.company ? contact.company.name : t("crm.sidebar.contacts")}
           </Link>
 
-          <div className="flex items-center gap-3 mb-3">
-            <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+          <div className="flex items-start gap-3 mb-3">
+            <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-1">
               <span className="text-lg font-bold text-red-700">{contact.firstName?.[0]?.toUpperCase()}</span>
             </div>
-            <div>
-              <h2 className="font-semibold text-gray-900">{contact.firstName} {contact.lastName}</h2>
-              {contact.jobTitle && <p className="text-xs text-gray-500">{contact.jobTitle}</p>}
+            <div className="flex-1 min-w-0">
+              {/* Editable name */}
+              {editing === "firstName" || editing === "lastName" ? (
+                <div className="flex gap-1 mb-1">
+                  <input
+                    type="text"
+                    value={editing === "firstName" ? editVal : contact.firstName}
+                    onChange={e => editing === "firstName" && setEditVal(e.target.value)}
+                    onKeyDown={e => { if (e.key === "Enter") saveField("firstName", editVal); if (e.key === "Escape") cancelEdit(); }}
+                    onBlur={() => saveField(editing, editVal)}
+                    autoFocus={editing === "firstName"}
+                    placeholder="Etunimi"
+                    className="text-sm font-semibold w-1/2 border border-indigo-300 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                  <input
+                    type="text"
+                    value={editing === "lastName" ? editVal : contact.lastName}
+                    onChange={e => editing === "lastName" && setEditVal(e.target.value)}
+                    onKeyDown={e => { if (e.key === "Enter") saveField("lastName", editVal); if (e.key === "Escape") cancelEdit(); }}
+                    onBlur={() => saveField(editing, editVal)}
+                    autoFocus={editing === "lastName"}
+                    placeholder="Sukunimi"
+                    className="text-sm font-semibold w-1/2 border border-indigo-300 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                </div>
+              ) : (
+                <button
+                  onClick={() => startEdit("firstName", contact.firstName)}
+                  className="group/name flex items-center gap-1 text-left w-full"
+                >
+                  <h2 className="font-semibold text-gray-900 text-sm">{contact.firstName} {contact.lastName}</h2>
+                  <PencilIcon className="h-3 w-3 text-gray-300 group-hover/name:text-indigo-400 flex-shrink-0" />
+                </button>
+              )}
+              {/* Editable jobTitle */}
+              {editing === "jobTitle" ? (
+                <input
+                  type="text"
+                  value={editVal}
+                  onChange={e => setEditVal(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter") saveField("jobTitle", editVal); if (e.key === "Escape") cancelEdit(); }}
+                  onBlur={() => saveField("jobTitle", editVal)}
+                  autoFocus
+                  placeholder="Tehtävänimike"
+                  className="text-xs w-full border border-indigo-300 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 mt-0.5"
+                />
+              ) : (
+                <button
+                  onClick={() => startEdit("jobTitle", contact.jobTitle)}
+                  className="group/title flex items-center gap-1 text-left"
+                >
+                  <span className="text-xs text-gray-500">{contact.jobTitle || <span className="text-gray-300">—</span>}</span>
+                  <PencilIcon className="h-3 w-3 text-gray-300 group-hover/title:text-indigo-400 flex-shrink-0" />
+                </button>
+              )}
               {contact.company && (
-                <Link href={`/dashboard/crm/companies/${contact.company._id}`} className="text-xs text-indigo-600 hover:underline">
+                <Link href={`/dashboard/crm/companies/${contact.company._id}`} className="text-xs text-indigo-600 hover:underline block mt-0.5">
                   {contact.company.name}
                 </Link>
               )}
@@ -284,25 +421,69 @@ export default function ContactDetailClient({ params }) {
           )}
         </div>
 
-        {/* About */}
+        {/* About — editable fields */}
         <div className="p-4">
           <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-3">{t("crm.company.about")}</h3>
-          <div className="space-y-2 text-sm">
+          <div className="space-y-2">
             {[
-              { label: t("common.email"), value: contact.email },
-              { label: t("common.phone"), value: contact.phone },
-              { label: t("crm.contacts.fields.mobilePhone"), value: contact.mobilePhone },
-              { label: t("crm.contacts.fields.lifecycleStage"), value: contact.lifecycleStage ? t(`crm.lifecycleStage.${contact.lifecycleStage}`) : null },
-              { label: t("crm.contacts.fields.linkedinUrl"), value: contact.linkedinUrl },
-              { label: t("crm.outreach.campaign"), value: contact.outreachCampaign },
-            ].map(({ label, value }) => (
-              <div key={label} className="flex justify-between gap-2">
-                <span className="text-gray-500 text-xs flex-shrink-0">{label}</span>
-                <span className="text-gray-800 text-xs text-right truncate">
-                  {value || <span className="text-gray-300">—</span>}
-                </span>
-              </div>
-            ))}
+              { key: "email",          label: t("common.email"),                              type: "email" },
+              { key: "phone",          label: t("common.phone"),                              type: "tel" },
+              { key: "mobilePhone",    label: t("crm.contacts.fields.mobilePhone"),           type: "tel" },
+              { key: "lifecycleStage", label: t("crm.contacts.fields.lifecycleStage"),        type: "select",
+                options: ["lead","prospect","customer","other"].map(v => ({ value: v, label: t(`crm.lifecycleStage.${v}`) })) },
+              { key: "linkedinUrl",    label: "LinkedIn",                                     type: "text" },
+              { key: "owner",          label: t("crm.contacts.fields.owner"),                 type: "select",
+                options: users.map(u => ({ value: u._id, label: u.name || u.email })) },
+              { key: "outreachCampaign", label: t("crm.outreach.campaign"),                  type: "text" },
+            ].map(({ key, label, type, options }) => {
+              const isEditing = editing === key;
+              let displayValue = contact[key];
+              if (key === "owner") displayValue = contact.owner?.name;
+              else if (key === "lifecycleStage" && displayValue) displayValue = t(`crm.lifecycleStage.${displayValue}`);
+
+              return (
+                <div key={key} className="flex justify-between gap-2 items-start group">
+                  <span className="text-gray-500 text-xs flex-shrink-0 mt-1">{label}</span>
+                  {isEditing ? (
+                    <div className="flex items-center gap-1 flex-1 justify-end">
+                      {type === "select" ? (
+                        <select
+                          value={editVal}
+                          onChange={e => { setEditVal(e.target.value); saveField(key, e.target.value); }}
+                          onKeyDown={e => { if (e.key === "Escape") cancelEdit(); }}
+                          autoFocus
+                          className="text-xs border border-indigo-300 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 max-w-[150px]"
+                        >
+                          <option value="">{key === "owner" ? "Ei omistajaa" : "—"}</option>
+                          {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                        </select>
+                      ) : (
+                        <input
+                          type={type}
+                          value={editVal}
+                          onChange={e => setEditVal(e.target.value)}
+                          onKeyDown={e => { if (e.key === "Enter") saveField(key, editVal); if (e.key === "Escape") cancelEdit(); }}
+                          onBlur={() => saveField(key, editVal)}
+                          autoFocus
+                          className="text-xs border border-indigo-300 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 w-full max-w-[150px]"
+                        />
+                      )}
+                      <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 flex-shrink-0">
+                        <XMarkIcon className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => startEdit(key, key === "owner" ? (contact.owner?._id || "") : (contact[key] || ""))}
+                      className="flex items-center gap-1 text-xs text-gray-800 text-right max-w-[160px] group/field"
+                    >
+                      <span className="truncate">{displayValue || <span className="text-gray-300">—</span>}</span>
+                      <PencilIcon className="h-3 w-3 text-gray-300 group-hover/field:text-indigo-400 flex-shrink-0 opacity-0 group-hover:opacity-100" />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -346,31 +527,12 @@ export default function ContactDetailClient({ params }) {
           {activeTab === "emails" && (
             <div className="space-y-2">
               {/* Outreach activities from Instantly imports */}
-              {outreachActivities?.length > 0 && outreachActivities.map(a => {
-                const status = a.metadata?.outreachStatus;
-                const campaign = a.metadata?.campaignName;
-                const statusStyle = OUTREACH_STATUS_STYLES[status] || { cls: "bg-gray-100 text-gray-500", icon: "📧" };
-                return (
-                  <div key={a._id} className="bg-white rounded-lg border border-indigo-100 p-4">
-                    <div className="flex items-start gap-3">
-                      <span className="text-lg flex-shrink-0 mt-0.5">✉️</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2 mb-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">Instantly</span>
-                            {campaign && <span className="text-xs text-gray-600 font-medium truncate max-w-[180px]">{campaign}</span>}
-                          </div>
-                          <span className="text-xs text-gray-400 flex-shrink-0">{new Date(a.createdAt).toLocaleDateString()}</span>
-                        </div>
-                        <span className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium ${statusStyle.cls}`}>
-                          <span>{statusStyle.icon}</span>
-                          {t(`crm.outreach.${status}`)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+              {outreachActivities?.length > 0 && outreachActivities.map(a => (
+                <ActivityItem key={a._id} activity={a}
+                  onDelete={handleDeleteActivity}
+                  onUpdated={handleUpdatedActivity}
+                />
+              ))}
               {!googleConnected ? (
                 <div className="bg-white rounded-lg border border-gray-200 p-6 text-center">
                   <p className="text-sm text-gray-500 mb-3">{t("crm.integrations.google.connectPrompt")}</p>
@@ -435,42 +597,12 @@ export default function ContactDetailClient({ params }) {
                 </div>
               ) : calls.length === 0 ? (
                 <div className="text-center py-12 text-gray-400 text-sm">{t("crm.activities.noActivities")}</div>
-              ) : (
-                calls.map(call => (
-                  <div key={call._id} className="bg-white rounded-lg border border-gray-200 p-4">
-                    <div className="flex items-start gap-3">
-                      <span className="text-lg flex-shrink-0 mt-0.5">📞</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-medium text-gray-800">
-                            {call.title || t(`crm.calls.direction.${call.direction}`)}
-                          </p>
-                          <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                            <span className="text-xs text-gray-400">{new Date(call.callDate).toLocaleString()}</span>
-                            {call.outcome && (
-                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${CALL_OUTCOME_COLORS[call.outcome] || "bg-gray-100 text-gray-600"}`}>
-                                {t(`crm.calls.outcome.${call.outcome}`)}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        {call.duration > 0 && <p className="text-xs text-gray-400 mt-0.5">{call.duration} min</p>}
-                        {call.notes && <p className="text-xs text-gray-500 mt-2 whitespace-pre-wrap">{call.notes}</p>}
-                        {call.deals?.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {call.deals.map(d => (
-                              <Link key={d._id} href={`/dashboard/crm/deals/${d._id}`}
-                                className="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
-                                {d.title}
-                              </Link>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
+              ) : calls.map(call => (
+                <CallItem key={call._id} call={call}
+                  onEdit={setEditingCall}
+                  onDelete={handleDeleteCall}
+                />
+              ))}
             </div>
           )}
 
@@ -490,45 +622,17 @@ export default function ContactDetailClient({ params }) {
                 </div>
               ) : tasks.length === 0 ? (
                 <div className="text-center py-12 text-gray-400 text-sm">{t("crm.activities.noActivities")}</div>
-              ) : (
-                tasks.map(task => {
-                  const isOverdue = task.status !== "completed" && task.dueDate && new Date(task.dueDate) < new Date();
-                  return (
-                    <div key={task._id} className="bg-white rounded-lg border border-gray-200 p-4 flex items-start gap-3">
-                      <button onClick={() => handleToggleTask(task)}
-                        className={`mt-0.5 h-4 w-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
-                          task.status === "completed" ? "bg-green-500 border-green-500" : "border-gray-300 hover:border-indigo-500"
-                        }`}>
-                        {task.status === "completed" && <CheckIcon className="h-2.5 w-2.5 text-white" />}
-                      </button>
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-sm ${task.status === "completed" ? "line-through text-gray-400" : "text-gray-800"}`}>
-                          {task.title}
-                        </p>
-                        {task.dueDate && (
-                          <p className={`text-xs mt-0.5 ${isOverdue ? "text-red-500" : "text-gray-400"}`}>
-                            {new Date(task.dueDate).toLocaleDateString()}
-                          </p>
-                        )}
-                        {task.deals?.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1.5">
-                            {task.deals.map(d => (
-                              <Link key={d._id} href={`/dashboard/crm/deals/${d._id}`}
-                                className="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
-                                {d.title}
-                              </Link>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })
-              )}
+              ) : tasks.map(task => (
+                <TaskItem key={task._id} task={task}
+                  onToggle={handleToggleTask}
+                  onEdit={setEditingTask}
+                  onDelete={handleDeleteTask}
+                />
+              ))}
             </div>
           )}
 
-          {/* Meetings tab — CRM meetings (including synced Google Calendar ones) */}
+          {/* Meetings tab */}
           {activeTab === "meetings" && (
             <div className="space-y-3">
               <div className="flex justify-end">
@@ -538,65 +642,18 @@ export default function ContactDetailClient({ params }) {
                   {t("crm.meetings.newMeeting")}
                 </button>
               </div>
-
               {meetings === null ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="animate-spin h-6 w-6 border-4 border-indigo-600 border-t-transparent rounded-full" />
                 </div>
               ) : meetings.length === 0 ? (
                 <div className="text-center py-8 text-gray-400 text-sm">{t("crm.activities.noActivities")}</div>
-              ) : (
-                meetings.map(m => (
-                  <div key={m._id} className="bg-white rounded-lg border border-gray-200 p-4">
-                    <div className="flex items-start gap-3">
-                      <span className="text-lg flex-shrink-0 mt-0.5">{m.source === "google" ? "🗓️" : "📅"}</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <p className="text-sm font-medium text-gray-800">
-                                {m.title || t(`crm.meetings.subtype.${m.subtype || "other"}`)}
-                              </p>
-                              {m.source === "google" && (
-                                <span className="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-medium">Google</span>
-                              )}
-                            </div>
-                            <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${MEETING_SUBTYPE_COLORS[m.subtype] || "bg-gray-100 text-gray-600"}`}>
-                                {t(`crm.meetings.subtype.${m.subtype || "other"}`)}
-                              </span>
-                              {m.outcome && (
-                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${MEETING_OUTCOME_COLORS[m.outcome] || "bg-gray-100 text-gray-600"}`}>
-                                  {t(`crm.meetings.outcome.${m.outcome}`)}
-                                </span>
-                              )}
-                              {m.duration > 0 && <span className="text-xs text-gray-400">{m.duration} min</span>}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            <span className="text-xs text-gray-400">{new Date(m.meetingDate).toLocaleString()}</span>
-                            <button onClick={() => setEditingMeeting(m)}
-                              className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600">
-                              <PencilIcon className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        </div>
-                        {m.deals?.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {m.deals.map(d => (
-                              <Link key={d._id} href={`/dashboard/crm/deals/${d._id}`}
-                                className="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
-                                {d.title}
-                              </Link>
-                            ))}
-                          </div>
-                        )}
-                        {m.notes && <p className="text-xs text-gray-500 mt-2 whitespace-pre-wrap">{m.notes}</p>}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
+              ) : meetings.map(m => (
+                <MeetingItem key={m._id} meeting={m}
+                  onEdit={setEditingMeeting}
+                  onDelete={handleDeleteMeeting}
+                />
+              ))}
             </div>
           )}
 
@@ -667,6 +724,20 @@ export default function ContactDetailClient({ params }) {
           meeting={editingMeeting}
           onClose={() => setEditingMeeting(null)}
           onUpdated={() => { setEditingMeeting(null); setMeetings(null); toast.success(t("crm.meetings.edit.success")); }}
+        />
+      )}
+      {editingCall && (
+        <EditCallModal
+          call={editingCall}
+          onClose={() => setEditingCall(null)}
+          onUpdated={() => { setEditingCall(null); setCalls(null); toast.success(t("crm.calls.edit.success")); }}
+        />
+      )}
+      {editingTask && (
+        <EditTaskModal
+          task={editingTask}
+          onClose={() => setEditingTask(null)}
+          onUpdated={() => { setEditingTask(null); setTasks(null); toast.success(t("crm.tasks.edit.success")); }}
         />
       )}
     </div>

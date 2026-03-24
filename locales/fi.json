@@ -196,6 +196,7 @@
         "owner": "Omistaja",
         "description": "Kuvaus",
         "linkedinUrl": "LinkedIn-URL",
+        "businessId": "Y-tunnus",
         "annualRevenue": "Vuosiliikevaihto",
         "address": "Osoite",
         "city": "Kaupunki",
@@ -261,9 +262,9 @@
       "viewList": "Lista",
       "stages": {
         "appointment-scheduled": "Tapaaminen sovittu",
-        "qualified-to-buy": "Kvalifioitu ostaja",
-        "presentation-scheduled": "Esittely sovittu",
-        "decision-maker-bought-in": "Päätöksentekijä mukana",
+        "follow-up": "Follow-uppaa",
+        "waiting-offer": "Odottaa tarjousta",
+        "offer-sent": "Tarjous lähetetty",
         "contract-sent": "Sopimus lähetetty",
         "closed-won": "Voitettu",
         "closed-lost": "Hävitty"
@@ -378,6 +379,10 @@
       "create": {
         "title": "Kirjaa puhelu",
         "success": "Puhelu kirjattu"
+      },
+      "edit": {
+        "title": "Muokkaa puhelua",
+        "success": "Puhelu päivitetty"
       }
     },
     "meetings": {

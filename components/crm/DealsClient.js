@@ -9,9 +9,9 @@ import CreateDealModal from "@/components/crm/CreateDealModal";
 
 const STAGES = [
   "appointment-scheduled",
-  "qualified-to-buy",
-  "presentation-scheduled",
-  "decision-maker-bought-in",
+  "follow-up",
+  "waiting-offer",
+  "offer-sent",
   "contract-sent",
   "closed-won",
   "closed-lost",
@@ -19,9 +19,9 @@ const STAGES = [
 
 const STAGE_COLORS = {
   "appointment-scheduled": "border-blue-400",
-  "qualified-to-buy": "border-indigo-400",
-  "presentation-scheduled": "border-purple-400",
-  "decision-maker-bought-in": "border-orange-400",
+  "follow-up": "border-indigo-400",
+  "waiting-offer": "border-purple-400",
+  "offer-sent": "border-orange-400",
   "contract-sent": "border-yellow-400",
   "closed-won": "border-green-400",
   "closed-lost": "border-red-400",
@@ -29,9 +29,9 @@ const STAGE_COLORS = {
 
 const STAGE_BG = {
   "appointment-scheduled": "bg-blue-50",
-  "qualified-to-buy": "bg-indigo-50",
-  "presentation-scheduled": "bg-purple-50",
-  "decision-maker-bought-in": "bg-orange-50",
+  "follow-up": "bg-indigo-50",
+  "waiting-offer": "bg-purple-50",
+  "offer-sent": "bg-orange-50",
   "contract-sent": "bg-yellow-50",
   "closed-won": "bg-green-50",
   "closed-lost": "bg-red-50",

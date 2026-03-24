@@ -14,6 +14,8 @@ import {
   PlusIcon,
   CheckIcon,
   ChatBubbleLeftIcon,
+  XMarkIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
 import CreateTaskModal from "@/components/crm/CreateTaskModal";
 import CreateDealModal from "@/components/crm/CreateDealModal";
@@ -22,6 +24,12 @@ import CreateCallModal from "@/components/crm/CreateCallModal";
 import CreateMeetingModal from "@/components/crm/CreateMeetingModal";
 import EditCompanyModal from "@/components/crm/EditCompanyModal";
 import EditMeetingModal from "@/components/crm/EditMeetingModal";
+import EditCallModal from "@/components/crm/EditCallModal";
+import EditTaskModal from "@/components/crm/EditTaskModal";
+import CallItem from "@/components/crm/CallItem";
+import MeetingItem from "@/components/crm/MeetingItem";
+import TaskItem from "@/components/crm/TaskItem";
+import ActivityItem from "@/components/crm/ActivityItem";
 
 const OUTREACH_STATUS_STYLES = {
   contacted:      { cls: "bg-blue-50 text-blue-600",   icon: "📧", short: "Lähetetty" },
@@ -51,9 +59,9 @@ const MEETING_SUBTYPE_COLORS = {
 
 const DEAL_STAGE_COLORS = {
   "appointment-scheduled": "bg-blue-100 text-blue-700",
-  "qualified-to-buy": "bg-indigo-100 text-indigo-700",
-  "presentation-scheduled": "bg-purple-100 text-purple-700",
-  "decision-maker-bought-in": "bg-orange-100 text-orange-700",
+  "follow-up": "bg-indigo-100 text-indigo-700",
+  "waiting-offer": "bg-purple-100 text-purple-700",
+  "offer-sent": "bg-orange-100 text-orange-700",
   "contract-sent": "bg-yellow-100 text-yellow-700",
   "closed-won": "bg-green-100 text-green-700",
   "closed-lost": "bg-red-100 text-red-700",
@@ -91,6 +99,8 @@ export default function CompanyDetailClient({ params }) {
   const [meetingPrefill, setMeetingPrefill] = useState(null);
   const [showEdit, setShowEdit] = useState(false);
   const [editingMeeting, setEditingMeeting] = useState(null);
+  const [editingCall, setEditingCall] = useState(null);
+  const [editingTask, setEditingTask] = useState(null);
 
   // Google integration
   const [gmailMessages, setGmailMessages] = useState(null); // null = not fetched
@@ -110,6 +120,43 @@ export default function CompanyDetailClient({ params }) {
   };
 
   useEffect(() => { fetchData(); }, [id]);
+
+  // Inline field editing
+  const [editing, setEditing] = useState(null);
+  const [editVal, setEditVal] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    fetch("/api/crm/users")
+      .then(r => r.json())
+      .then(d => setUsers(d.users || []))
+      .catch(() => {});
+  }, []);
+
+  const startEdit = (field, rawValue) => { setEditing(field); setEditVal(rawValue ?? ""); };
+  const cancelEdit = () => { setEditing(null); setEditVal(""); };
+
+  const saveFieldCompany = async (field, value) => {
+    if (saving) return;
+    setSaving(true);
+    const finalValue = (field === "owner" && !value) ? null : value;
+    try {
+      await fetch(`/api/crm/companies/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [field]: finalValue }),
+      });
+      setEditing(null);
+      setEditVal("");
+      fetchData();
+      toast.success(t("crm.companies.edit.success"));
+    } catch {
+      toast.error("Failed to save");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // Fetch Google connection status once
   useEffect(() => {
@@ -227,6 +274,41 @@ export default function CompanyDetailClient({ params }) {
     }
   };
 
+  const handleDeleteActivity = async (activityId) => {
+    try {
+      await fetch(`/api/crm/activities/${activityId}`, { method: "DELETE" });
+      fetchData();
+    } catch { toast.error("Failed to delete"); }
+  };
+
+  const handleDeleteCall = async (callId) => {
+    try {
+      await fetch(`/api/crm/calls/${callId}`, { method: "DELETE" });
+      fetchData();
+    } catch { toast.error("Failed to delete"); }
+  };
+
+  const handleDeleteMeeting = async (meetingId) => {
+    try {
+      await fetch(`/api/crm/meetings/${meetingId}`, { method: "DELETE" });
+      fetchData();
+    } catch { toast.error("Failed to delete"); }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    try {
+      await fetch(`/api/crm/tasks/${taskId}`, { method: "DELETE" });
+      fetchData();
+    } catch { toast.error("Failed to delete"); }
+  };
+
+  const handleUpdatedActivity = (updated) => {
+    setData(prev => ({
+      ...prev,
+      activities: (prev.activities || []).map(a => a._id === updated._id ? { ...a, ...updated } : a),
+    }));
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -246,7 +328,7 @@ export default function CompanyDetailClient({ params }) {
     );
   }
 
-  const { company, contacts = [], deals = [], tasks = [], activities = [], meetings = [] } = data;
+  const { company, contacts = [], deals = [], tasks = [], activities = [], meetings = [], calls = [] } = data;
 
   const tabs = [
     { key: "activity", label: t("crm.company.tabs.activity") },
@@ -265,6 +347,7 @@ export default function CompanyDetailClient({ params }) {
   const unifiedFeed = [
     ...activities.map(a => ({ ...a, _type: "activity", _date: new Date(a.createdAt) })),
     ...meetings.map(m => ({ ...m, _type: "crm-meeting", _date: new Date(m.meetingDate) })),
+    ...calls.map(c => ({ ...c, _type: "crm-call", _date: new Date(c.callDate) })),
     ...(gmailMessages || []).map(m => ({ ...m, _type: "email", _date: new Date(m.date) })),
   ].sort((a, b) => b._date - a._date);
 
@@ -288,73 +371,124 @@ export default function CompanyDetailClient({ params }) {
             {t("crm.sidebar.companies")}
           </Link>
 
-          <div className="flex items-center gap-3 mb-4">
-            <div className="h-12 w-12 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
+          <div className="flex items-start gap-3 mb-4">
+            <div className="h-12 w-12 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0 mt-1">
               <span className="text-lg font-bold text-indigo-700">
                 {company.name?.[0]?.toUpperCase()}
               </span>
             </div>
-            <div>
-              <h2 className="font-semibold text-gray-900">{company.name}</h2>
-              {company.website && (
-                <a
-                  href={company.website.startsWith("http") ? company.website : `https://${company.website}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-indigo-600 hover:underline flex items-center gap-1"
-                >
-                  <GlobeAltIcon className="h-3 w-3" />
-                  {company.website.replace(/^https?:\/\//, "")}
-                </a>
+            <div className="flex-1 min-w-0">
+              {/* Editable company name */}
+              {editing === "name" ? (
+                <input
+                  type="text"
+                  value={editVal}
+                  onChange={e => setEditVal(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter") saveFieldCompany("name", editVal); if (e.key === "Escape") cancelEdit(); }}
+                  onBlur={() => saveFieldCompany("name", editVal)}
+                  autoFocus
+                  className="text-sm font-semibold w-full border border-indigo-300 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+              ) : (
+                <button onClick={() => startEdit("name", company.name)} className="group/name flex items-center gap-1 text-left w-full">
+                  <h2 className="font-semibold text-gray-900 text-sm truncate">{company.name}</h2>
+                  <PencilIcon className="h-3 w-3 text-gray-300 group-hover/name:text-indigo-400 flex-shrink-0" />
+                </button>
+              )}
+              {/* Editable website */}
+              {editing === "website" ? (
+                <input
+                  type="text"
+                  value={editVal}
+                  onChange={e => setEditVal(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter") saveFieldCompany("website", editVal); if (e.key === "Escape") cancelEdit(); }}
+                  onBlur={() => saveFieldCompany("website", editVal)}
+                  autoFocus
+                  placeholder="https://..."
+                  className="text-xs w-full border border-indigo-300 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 mt-0.5"
+                />
+              ) : (
+                <button onClick={() => startEdit("website", company.website)} className="group/site flex items-center gap-1 text-left mt-0.5">
+                  <GlobeAltIcon className="h-3 w-3 text-gray-400 flex-shrink-0" />
+                  <span className="text-xs text-indigo-600 truncate max-w-[160px]">
+                    {company.website ? company.website.replace(/^https?:\/\//, "") : <span className="text-gray-300">—</span>}
+                  </span>
+                  <PencilIcon className="h-3 w-3 text-gray-300 group-hover/site:text-indigo-400 flex-shrink-0" />
+                </button>
               )}
             </div>
           </div>
-
         </div>
 
-        {/* About section */}
+        {/* About section — editable */}
         <div className="p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
-              {t("crm.company.about")}
-            </h3>
-            <button
-              onClick={() => setShowEdit(true)}
-              className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600"
-            >
-              <PencilIcon className="h-3.5 w-3.5" />
-            </button>
-          </div>
+          <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-3">
+            {t("crm.company.about")}
+          </h3>
 
-          <div className="space-y-2 text-sm">
+          <div className="space-y-2">
             {[
-              { label: t("crm.companies.fields.companyName"), value: company.name },
-              { label: t("common.phone"), value: company.phone },
-              { label: t("common.email"), value: company.email },
-              { label: t("crm.companies.fields.domain"), value: company.website },
-              {
-                label: t("crm.companies.fields.lifecycleStage"),
-                value: company.lifecycleStage
-                  ? t(`crm.lifecycleStage.${company.lifecycleStage}`)
-                  : null,
-              },
-              {
-                label: t("crm.companies.fields.industry"),
-                value: company.industry,
-              },
-              {
-                label: t("crm.companies.fields.size"),
-                value: company.size ? t(`crm.companySize.${company.size}`) : null,
-              },
-              { label: t("common.owner"), value: company.owner?.name },
-            ].map(({ label, value }) => (
-              <div key={label} className="flex justify-between gap-2">
-                <span className="text-gray-500 text-xs flex-shrink-0">{label}</span>
-                <span className="text-gray-800 text-xs text-right truncate">
-                  {value || <span className="text-gray-300">—</span>}
-                </span>
-              </div>
-            ))}
+              { key: "phone",          label: t("common.phone"),                          type: "tel" },
+              { key: "email",          label: t("common.email"),                          type: "email" },
+              { key: "businessId",     label: t("crm.companies.fields.businessId"),       type: "text" },
+              { key: "lifecycleStage", label: t("crm.companies.fields.lifecycleStage"),   type: "select",
+                options: ["lead","prospect","opportunity","customer","evangelist","other"].map(v => ({ value: v, label: t(`crm.lifecycleStage.${v}`) })) },
+              { key: "industry",       label: t("crm.companies.fields.industry"),         type: "text" },
+              { key: "size",           label: t("crm.companies.fields.size"),             type: "select",
+                options: ["1-10","11-50","51-200","201-500","501-1000","1000+"].map(v => ({ value: v, label: v })) },
+              { key: "owner",          label: t("common.owner"),                          type: "select",
+                options: users.map(u => ({ value: u._id, label: u.name || u.email })) },
+              { key: "linkedinUrl",    label: "LinkedIn",                                 type: "text" },
+            ].map(({ key, label, type, options }) => {
+              const isEditing = editing === key;
+              let displayValue = company[key];
+              if (key === "owner") displayValue = company.owner?.name;
+              else if (key === "lifecycleStage" && displayValue) displayValue = t(`crm.lifecycleStage.${displayValue}`);
+              else if (key === "size" && displayValue) displayValue = displayValue;
+
+              return (
+                <div key={key} className="flex justify-between gap-2 items-start group">
+                  <span className="text-gray-500 text-xs flex-shrink-0 mt-1">{label}</span>
+                  {isEditing ? (
+                    <div className="flex items-center gap-1 flex-1 justify-end">
+                      {type === "select" ? (
+                        <select
+                          value={editVal}
+                          onChange={e => { setEditVal(e.target.value); saveFieldCompany(key, e.target.value); }}
+                          onKeyDown={e => { if (e.key === "Escape") cancelEdit(); }}
+                          autoFocus
+                          className="text-xs border border-indigo-300 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 max-w-[150px]"
+                        >
+                          <option value="">{key === "owner" ? "Ei omistajaa" : "—"}</option>
+                          {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                        </select>
+                      ) : (
+                        <input
+                          type={type}
+                          value={editVal}
+                          onChange={e => setEditVal(e.target.value)}
+                          onKeyDown={e => { if (e.key === "Enter") saveFieldCompany(key, editVal); if (e.key === "Escape") cancelEdit(); }}
+                          onBlur={() => saveFieldCompany(key, editVal)}
+                          autoFocus
+                          className="text-xs border border-indigo-300 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 w-full max-w-[150px]"
+                        />
+                      )}
+                      <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 flex-shrink-0">
+                        <XMarkIcon className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => startEdit(key, key === "owner" ? (company.owner?._id || "") : (company[key] || ""))}
+                      className="flex items-center gap-1 text-xs text-gray-800 text-right max-w-[160px] group/field"
+                    >
+                      <span className="truncate">{displayValue || <span className="text-gray-300">—</span>}</span>
+                      <PencilIcon className="h-3 w-3 text-gray-300 group-hover/field:text-indigo-400 flex-shrink-0 opacity-0 group-hover:opacity-100" />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -573,120 +707,23 @@ export default function CompanyDetailClient({ params }) {
                     </div>
                   );
                   if (item._type === "crm-meeting") return (
-                    <div key={item._id} className="bg-white rounded-lg border border-gray-200 p-4">
-                      <div className="flex items-start gap-3">
-                        <span className="text-lg flex-shrink-0 mt-0.5">{item.source === "google" ? "🗓️" : "📅"}</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1.5">
-                                <p className="text-sm font-medium text-gray-800">
-                                  {item.title || t(`crm.meetings.subtype.${item.subtype || "other"}`)}
-                                </p>
-                                {item.source === "google" && (
-                                  <span className="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-medium">Google</span>
-                                )}
-                              </div>
-                              <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${MEETING_SUBTYPE_COLORS[item.subtype] || "bg-gray-100 text-gray-600"}`}>
-                                  {t(`crm.meetings.subtype.${item.subtype || "other"}`)}
-                                </span>
-                                {item.outcome && (
-                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${MEETING_OUTCOME_COLORS[item.outcome] || "bg-gray-100 text-gray-600"}`}>
-                                    {t(`crm.meetings.outcome.${item.outcome}`)}
-                                  </span>
-                                )}
-                                <span className="text-xs text-gray-400">{t(`crm.meetings.type.${item.type}`)}</span>
-                                {item.duration > 0 && <span className="text-xs text-gray-400">{item.duration} min</span>}
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2 flex-shrink-0">
-                              <span className="text-xs text-gray-400">{item._date.toLocaleString()}</span>
-                              <button
-                                onClick={() => setEditingMeeting(item)}
-                                className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600"
-                              >
-                                <PencilIcon className="h-3.5 w-3.5" />
-                              </button>
-                            </div>
-                          </div>
-                          {item.contacts?.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {item.contacts.map(c => (
-                                <Link key={c._id} href={`/dashboard/crm/contacts/${c._id}`}
-                                  className="text-xs bg-gray-100 hover:bg-indigo-100 text-gray-600 hover:text-indigo-700 px-2 py-0.5 rounded-full">
-                                  {c.firstName} {c.lastName}
-                                </Link>
-                              ))}
-                            </div>
-                          )}
-                          {item.deals?.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {item.deals.map(d => (
-                                <Link key={d._id} href={`/dashboard/crm/deals/${d._id}`}
-                                  className="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
-                                  {d.title}
-                                </Link>
-                              ))}
-                            </div>
-                          )}
-                          {item.notes && <p className="text-xs text-gray-500 mt-2 whitespace-pre-wrap">{item.notes}</p>}
-                        </div>
-                      </div>
-                    </div>
+                    <MeetingItem key={item._id} meeting={item}
+                      onEdit={setEditingMeeting}
+                      onDelete={handleDeleteMeeting}
+                    />
                   );
-                  // Special render for Instantly email outreach activities
-                  if (item.type === "email" && item.metadata?.source === "instantly") {
-                    const status = item.metadata?.outreachStatus;
-                    const statusStyle = OUTREACH_STATUS_STYLES[status] || { cls: "bg-gray-100 text-gray-500 border border-gray-200", icon: "📧", short: status };
-                    return (
-                      <div key={item._id} className="bg-white rounded-lg border border-indigo-100 p-4">
-                        <div className="flex items-start gap-3">
-                          <span className="text-lg flex-shrink-0 mt-0.5">✉️</span>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-2 mb-1">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">Instantly</span>
-                                {item.metadata?.campaignName && (
-                                  <span className="text-xs text-gray-600 font-medium">{item.metadata.campaignName}</span>
-                                )}
-                              </div>
-                              <span className="text-xs text-gray-400 flex-shrink-0">{item._date.toLocaleString()}</span>
-                            </div>
-                            {item.contact && (
-                              <Link
-                                href={`/dashboard/crm/contacts/${item.contact._id || item.contact}`}
-                                className="text-xs text-indigo-600 hover:underline font-medium"
-                              >
-                                {item.contact.firstName} {item.contact.lastName}
-                              </Link>
-                            )}
-                            {status && (
-                              <div className="mt-1">
-                                <span className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium ${statusStyle.cls}`}>
-                                  {statusStyle.icon} {t(`crm.outreach.${status}`)}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  }
+                  if (item._type === "crm-call") return (
+                    <CallItem key={item._id} call={item}
+                      onEdit={setEditingCall}
+                      onDelete={handleDeleteCall}
+                    />
+                  );
 
                   return (
-                    <div key={item._id} className="bg-white rounded-lg border border-gray-200 p-4">
-                      <div className="flex items-start gap-3">
-                        <span className="text-lg flex-shrink-0 mt-0.5">{ACTIVITY_ICONS[item.type] || "📌"}</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-sm font-medium text-gray-800">{item.createdBy?.name || "System"}</span>
-                            <span className="text-xs text-gray-400 flex-shrink-0">{item._date.toLocaleString()}</span>
-                          </div>
-                          {item.content && <p className="text-sm text-gray-600 mt-1 whitespace-pre-wrap">{item.content}</p>}
-                        </div>
-                      </div>
-                    </div>
+                    <ActivityItem key={item._id} activity={item}
+                      onDelete={handleDeleteActivity}
+                      onUpdated={handleUpdatedActivity}
+                    />
                   );
                 })}
               </div>
@@ -700,42 +737,26 @@ export default function CompanyDetailClient({ params }) {
             ) : (
               <div className="space-y-3">
                 {filteredActivities.map(activity => (
-                  <div key={activity._id} className="bg-white rounded-lg border border-gray-200 p-4">
-                    <div className="flex items-start gap-3">
-                      <span className="text-lg flex-shrink-0 mt-0.5">{ACTIVITY_ICONS[activity.type] || "📌"}</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-sm font-medium text-gray-800">{activity.createdBy?.name || "System"}</span>
-                          <span className="text-xs text-gray-400 flex-shrink-0">{new Date(activity.createdAt).toLocaleString()}</span>
-                        </div>
-                        {activity.content && <p className="text-sm text-gray-600 mt-1 whitespace-pre-wrap">{activity.content}</p>}
-                      </div>
-                    </div>
-                  </div>
+                  <ActivityItem key={activity._id} activity={activity}
+                    onDelete={handleDeleteActivity}
+                    onUpdated={handleUpdatedActivity}
+                  />
                 ))}
               </div>
             )
           )}
 
-          {/* Calls tab — simple list from activities */}
+          {/* Calls tab */}
           {activeTab === "calls" && (
-            filteredActivities.length === 0 ? (
+            calls.length === 0 ? (
               <div className="text-center py-12 text-gray-400 text-sm">{t("crm.activities.noActivities")}</div>
             ) : (
               <div className="space-y-3">
-                {filteredActivities.map(activity => (
-                  <div key={activity._id} className="bg-white rounded-lg border border-gray-200 p-4">
-                    <div className="flex items-start gap-3">
-                      <span className="text-lg flex-shrink-0 mt-0.5">📞</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-sm font-medium text-gray-800">{activity.createdBy?.name || "System"}</span>
-                          <span className="text-xs text-gray-400 flex-shrink-0">{new Date(activity.createdAt).toLocaleString()}</span>
-                        </div>
-                        {activity.content && <p className="text-sm text-gray-600 mt-1 whitespace-pre-wrap">{activity.content}</p>}
-                      </div>
-                    </div>
-                  </div>
+                {calls.map(call => (
+                  <CallItem key={call._id} call={call}
+                    onEdit={setEditingCall}
+                    onDelete={handleDeleteCall}
+                  />
                 ))}
               </div>
             )
@@ -747,101 +768,28 @@ export default function CompanyDetailClient({ params }) {
               <div className="text-center py-12 text-gray-400 text-sm">{t("crm.activities.noActivities")}</div>
             ) : (
               <div className="space-y-3">
-                {tasks.map(task => {
-                  const isOverdue = task.status !== "completed" && task.dueDate && new Date(task.dueDate) < new Date();
-                  return (
-                    <div key={task._id} className="bg-white rounded-lg border border-gray-200 p-4 flex items-start gap-3">
-                      <button onClick={() => handleToggleTask(task)}
-                        className={`mt-0.5 h-4 w-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
-                          task.status === "completed" ? "bg-green-500 border-green-500" : "border-gray-300 hover:border-indigo-500"
-                        }`}>
-                        {task.status === "completed" && <CheckIcon className="h-2.5 w-2.5 text-white" />}
-                      </button>
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-sm ${task.status === "completed" ? "line-through text-gray-400" : "text-gray-800"}`}>{task.title}</p>
-                        {task.dueDate && (
-                          <p className={`text-xs mt-0.5 ${isOverdue ? "text-red-500" : "text-gray-400"}`}>
-                            {new Date(task.dueDate).toLocaleDateString()}
-                          </p>
-                        )}
-                      </div>
-                      <span className="text-xs text-gray-400">{task.assignedTo?.name}</span>
-                    </div>
-                  );
-                })}
+                {tasks.map(task => (
+                  <TaskItem key={task._id} task={task}
+                    onToggle={handleToggleTask}
+                    onEdit={setEditingTask}
+                    onDelete={handleDeleteTask}
+                  />
+                ))}
               </div>
             )
           )}
 
-          {/* Meetings tab — all CRM meetings (including Google Calendar synced ones) */}
+          {/* Meetings tab */}
           {activeTab === "meetings" && (
             <div className="space-y-3">
               {meetings.length === 0 ? (
                 <div className="text-center py-12 text-gray-400 text-sm">{t("crm.activities.noActivities")}</div>
-              ) : (
-                <>
-                  {meetings.map(m => (
-                    <div key={m._id} className="bg-white rounded-lg border border-gray-200 p-4">
-                      <div className="flex items-start gap-3">
-                        <span className="text-lg flex-shrink-0 mt-0.5">{m.source === "google" ? "🗓️" : "📅"}</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1.5">
-                                <p className="text-sm font-medium text-gray-800">
-                                  {m.title || t(`crm.meetings.subtype.${m.subtype || "other"}`)}
-                                </p>
-                                {m.source === "google" && (
-                                  <span className="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-medium">Google</span>
-                                )}
-                              </div>
-                              <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${MEETING_SUBTYPE_COLORS[m.subtype] || "bg-gray-100 text-gray-600"}`}>
-                                  {t(`crm.meetings.subtype.${m.subtype || "other"}`)}
-                                </span>
-                                {m.outcome && (
-                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${MEETING_OUTCOME_COLORS[m.outcome] || "bg-gray-100 text-gray-600"}`}>
-                                    {t(`crm.meetings.outcome.${m.outcome}`)}
-                                  </span>
-                                )}
-                                {m.duration > 0 && <span className="text-xs text-gray-400">{m.duration} min</span>}
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2 flex-shrink-0">
-                              <span className="text-xs text-gray-400">{new Date(m.meetingDate).toLocaleString()}</span>
-                              <button onClick={() => setEditingMeeting(m)}
-                                className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600">
-                                <PencilIcon className="h-3.5 w-3.5" />
-                              </button>
-                            </div>
-                          </div>
-                          {m.contacts?.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {m.contacts.map(c => (
-                                <Link key={c._id} href={`/dashboard/crm/contacts/${c._id}`}
-                                  className="text-xs bg-gray-100 hover:bg-indigo-100 text-gray-600 hover:text-indigo-700 px-2 py-0.5 rounded-full">
-                                  {c.firstName} {c.lastName}
-                                </Link>
-                              ))}
-                            </div>
-                          )}
-                          {m.deals?.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {m.deals.map(d => (
-                                <Link key={d._id} href={`/dashboard/crm/deals/${d._id}`}
-                                  className="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
-                                  {d.title}
-                                </Link>
-                              ))}
-                            </div>
-                          )}
-                          {m.notes && <p className="text-xs text-gray-500 mt-2 whitespace-pre-wrap">{m.notes}</p>}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </>
-              )}
+              ) : meetings.map(m => (
+                <MeetingItem key={m._id} meeting={m}
+                  onEdit={setEditingMeeting}
+                  onDelete={handleDeleteMeeting}
+                />
+              ))}
             </div>
           )}
         </div>
@@ -1084,6 +1032,20 @@ export default function CompanyDetailClient({ params }) {
           meeting={editingMeeting}
           onClose={() => setEditingMeeting(null)}
           onUpdated={() => { setEditingMeeting(null); fetchData(); toast.success(t("crm.meetings.edit.success")); }}
+        />
+      )}
+      {editingCall && (
+        <EditCallModal
+          call={editingCall}
+          onClose={() => setEditingCall(null)}
+          onUpdated={() => { setEditingCall(null); fetchData(); toast.success(t("crm.calls.edit.success")); }}
+        />
+      )}
+      {editingTask && (
+        <EditTaskModal
+          task={editingTask}
+          onClose={() => setEditingTask(null)}
+          onUpdated={() => { setEditingTask(null); fetchData(); toast.success(t("crm.tasks.edit.success")); }}
         />
       )}
     </div>

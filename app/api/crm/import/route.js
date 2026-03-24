@@ -74,6 +74,7 @@ export async function POST(req) {
 
     const ownerId = session.user.id;
     const companyCache = {}; // companyName.toLowerCase() → companyDoc._id
+    const upgradedCompanies = new Set(); // track which companies got upgraded this batch
     let created = 0, updated = 0, skipped = 0;
     const errors = [];
 
@@ -87,6 +88,16 @@ export async function POST(req) {
       if (!firstName) { skipped++; continue; }
 
       try {
+        // --- Determine outreachStatus early so company creation can use it ---
+        const campaignName = row["Campaign Name"]?.trim() || row["campaignName"]?.trim() || "";
+        const interestStatus = row["Interest Status"] || row["interestStatus"] || "";
+        const leadStatus = row["Lead Status"] || row["leadStatus"] || "";
+        const lifecycleStage = mapLifecycleStage(interestStatus);
+        const outreachStatus = checkBounced(leadStatus)
+          ? "bounced"
+          : mapOutreachStatusFromInterest(interestStatus);
+        const isInterested = outreachStatus === "interested";
+
         // --- Company: find or create ---
         let companyId = null;
         const rawCompanyName = row["companyName"]?.trim() || row["Company Name"]?.trim();
@@ -103,24 +114,27 @@ export async function POST(req) {
             } else {
               const newCompany = await Company.create({
                 name: rawCompanyName,
-                lifecycleStage: "lead",
+                lifecycleStage: isInterested ? "opportunity" : "lead",
                 owner: ownerId,
               });
               companyId = newCompany._id;
+              if (isInterested) upgradedCompanies.add(companyId.toString());
             }
             companyCache[key] = companyId;
+          }
+
+          // Upgrade company to opportunity if any contact is interested
+          // Never downgrade from customer/evangelist
+          if (isInterested && companyId && !upgradedCompanies.has(companyId.toString())) {
+            await Company.updateOne(
+              { _id: companyId, lifecycleStage: { $nin: ["customer", "evangelist"] } },
+              { $set: { lifecycleStage: "opportunity" } }
+            );
+            upgradedCompanies.add(companyId.toString());
           }
         }
 
         // --- Contact: upsert by email ---
-        const campaignName = row["Campaign Name"]?.trim() || row["campaignName"]?.trim() || "";
-        const interestStatus = row["Interest Status"] || row["interestStatus"] || "";
-        const leadStatus = row["Lead Status"] || row["leadStatus"] || "";
-        const lifecycleStage = mapLifecycleStage(interestStatus);
-        // "Interest Status" is the primary signal; bounce overrides everything
-        const outreachStatus = checkBounced(leadStatus)
-          ? "bounced"
-          : mapOutreachStatusFromInterest(interestStatus);
         const linkedinUrl = row["linkedIn"]?.trim() || row["linkedinUrl"]?.trim() || "";
         const jobTitle = row["jobTitle"]?.trim() || row["Job Title"]?.trim() || "";
 
