@@ -444,7 +444,7 @@ export default function CompanyDetailClient({ params }) {
               let displayValue = company[key];
               if (key === "owner") displayValue = company.owner?.name;
               else if (key === "lifecycleStage" && displayValue) displayValue = t(`crm.lifecycleStage.${displayValue}`);
-              else if (key === "size" && displayValue) displayValue = displayValue;
+              // size uses raw value as-is
 
               return (
                 <div key={key} className="flex justify-between gap-2 items-start group">
