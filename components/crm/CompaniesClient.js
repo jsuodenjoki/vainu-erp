@@ -328,10 +328,16 @@ export default function CompaniesClient() {
             <tbody className="divide-y divide-gray-100 bg-white">
               {companies.map((company) => {
                 const isSelected = selectedIds.has(company._id);
-                // Show only domain, strip protocol + path + query params
-                const domain = company.website
-                  ? company.website.replace(/^https?:\/\//, "").split("?")[0].split("/")[0]
-                  : null;
+                // Robust domain extraction using URL API with fallback
+                const domain = (() => {
+                  if (!company.website) return null;
+                  try {
+                    const href = company.website.startsWith("http") ? company.website : `https://${company.website}`;
+                    return new URL(href).hostname.replace(/^www\./, "");
+                  } catch {
+                    return company.website.replace(/^https?:\/\//, "").split("?")[0].split("/")[0];
+                  }
+                })();
                 return (
                   <tr
                     key={company._id}
@@ -345,7 +351,7 @@ export default function CompaniesClient() {
                         className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                       />
                     </td>
-                    <td className="px-3 py-3 w-64">
+                    <td className="px-3 py-3 max-w-[260px]">
                       <Link
                         href={`/dashboard/crm/companies/${company._id}`}
                         className="flex items-center gap-3 group"
@@ -355,12 +361,12 @@ export default function CompaniesClient() {
                             {company.name?.[0]?.toUpperCase() || "?"}
                           </span>
                         </div>
-                        <div className="min-w-0">
-                          <p className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
+                        <div className="min-w-0 overflow-hidden">
+                          <p className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors truncate">
                             {company.name}
                           </p>
                           {domain && (
-                            <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+                            <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5 overflow-hidden">
                               <GlobeAltIcon className="h-3 w-3 flex-shrink-0" />
                               <span className="truncate">{domain}</span>
                             </p>
@@ -398,10 +404,10 @@ export default function CompaniesClient() {
                     <td className="px-2 py-3 w-10" onClick={e => e.stopPropagation()}>
                       <button
                         onClick={() => deleteCompany(company._id, company.name)}
-                        className="p-1 rounded text-gray-200 hover:text-red-500 hover:bg-red-50 transition-colors opacity-0 group-hover/row:opacity-100"
+                        className="p-1 rounded text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
                         title="Poista yritys"
                       >
-                        <TrashIcon className="h-4 w-4" />
+                        <XMarkIcon className="h-4 w-4" />
                       </button>
                     </td>
                   </tr>
