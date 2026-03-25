@@ -40,7 +40,16 @@ export async function POST(req) {
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     await connectMongo();
     const body = await req.json();
-    const call = await Call.create({ ...body, createdBy: session.user.id });
+
+    // Sanitize: remove empty strings for ObjectId fields
+    const payload = { ...body, createdBy: session.user.id };
+    if (!payload.company) delete payload.company;
+    if (Array.isArray(payload.contacts)) payload.contacts = payload.contacts.filter(Boolean);
+    if (Array.isArray(payload.deals)) payload.deals = payload.deals.filter(Boolean);
+    // Outcome default fallback
+    if (!payload.outcome) payload.outcome = "connected";
+
+    const call = await Call.create(payload);
     const populated = await Call.findById(call._id)
       .populate("company", "name")
       .populate("contacts", "firstName lastName email")
@@ -49,6 +58,7 @@ export async function POST(req) {
       .lean();
     return NextResponse.json({ call: populated }, { status: 201 });
   } catch (err) {
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    console.error("[POST /api/crm/calls] error:", err);
+    return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
   }
 }

@@ -34,8 +34,8 @@ export default function ActivityItem({ activity, onDelete, onUpdated }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error();
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed");
       setEditing(false);
       onUpdated?.({ ...activity, content });
       toast.success("Tallennettu");

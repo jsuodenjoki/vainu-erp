@@ -137,6 +137,18 @@ export default function CompaniesClient() {
     }
   };
 
+  const deleteCompany = async (id, name) => {
+    if (!confirm(`Poistetaanko "${name}"? Tätä ei voi peruuttaa.`)) return;
+    try {
+      await fetch(`/api/crm/companies/${id}`, { method: "DELETE" });
+      setCompanies(prev => prev.filter(c => c._id !== id));
+      setTotal(prev => prev - 1);
+      toast.success("Yritys poistettu");
+    } catch {
+      toast.error("Poisto epäonnistui");
+    }
+  };
+
   const allSelected = companies.length > 0 && selectedIds.size === companies.length;
   const someSelected = selectedIds.size > 0;
 
@@ -286,7 +298,7 @@ export default function CompaniesClient() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
               <tr>
-                <th className="pl-4 pr-2 py-3 w-10">
+                <th className="pl-4 pr-2 py-3 w-10 flex-shrink-0">
                   <input
                     type="checkbox"
                     checked={allSelected}
@@ -295,30 +307,35 @@ export default function CompaniesClient() {
                     className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                   />
                 </th>
-                <th className="text-left px-3 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">
+                <th className="text-left px-3 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide w-64">
                   {t("crm.companies.columns.name")}
                 </th>
-                <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">
+                <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap">
                   {t("crm.companies.columns.phone")}
                 </th>
-                <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">
+                <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap">
                   {t("crm.companies.columns.stage")}
                 </th>
-                <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">
+                <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap">
                   {t("crm.companies.columns.owner")}
                 </th>
-                <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">
+                <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap">
                   {t("crm.companies.columns.createdAt")}
                 </th>
+                <th className="w-10" />
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 bg-white">
               {companies.map((company) => {
                 const isSelected = selectedIds.has(company._id);
+                // Show only domain, strip protocol + path + query params
+                const domain = company.website
+                  ? company.website.replace(/^https?:\/\//, "").split("?")[0].split("/")[0]
+                  : null;
                 return (
                   <tr
                     key={company._id}
-                    className={`transition-colors ${isSelected ? "bg-indigo-50" : "hover:bg-gray-50"}`}
+                    className={`transition-colors group/row ${isSelected ? "bg-indigo-50" : "hover:bg-gray-50"}`}
                   >
                     <td className="pl-4 pr-2 py-3 w-10" onClick={e => e.stopPropagation()}>
                       <input
@@ -328,7 +345,7 @@ export default function CompaniesClient() {
                         className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                       />
                     </td>
-                    <td className="px-3 py-3">
+                    <td className="px-3 py-3 w-64">
                       <Link
                         href={`/dashboard/crm/companies/${company._id}`}
                         className="flex items-center gap-3 group"
@@ -338,20 +355,20 @@ export default function CompaniesClient() {
                             {company.name?.[0]?.toUpperCase() || "?"}
                           </span>
                         </div>
-                        <div>
+                        <div className="min-w-0">
                           <p className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
                             {company.name}
                           </p>
-                          {company.website && (
+                          {domain && (
                             <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
-                              <GlobeAltIcon className="h-3 w-3" />
-                              {company.website.replace(/^https?:\/\//, "")}
+                              <GlobeAltIcon className="h-3 w-3 flex-shrink-0" />
+                              <span className="truncate">{domain}</span>
                             </p>
                           )}
                         </div>
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-gray-600">
+                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
                       {company.phone ? (
                         <span className="flex items-center gap-1">
                           <PhoneIcon className="h-3 w-3 text-gray-400" />
@@ -361,7 +378,7 @@ export default function CompaniesClient() {
                         <span className="text-gray-300">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       {company.lifecycleStage ? (
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${LIFECYCLE_COLORS[company.lifecycleStage] || LIFECYCLE_COLORS.other}`}>
                           {t(`crm.lifecycleStage.${company.lifecycleStage}`)}
@@ -370,13 +387,22 @@ export default function CompaniesClient() {
                         <span className="text-gray-300">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-gray-600 text-sm">
+                    <td className="px-4 py-3 text-gray-600 text-sm whitespace-nowrap">
                       {company.owner?.name || <span className="text-gray-300">—</span>}
                     </td>
-                    <td className="px-4 py-3 text-gray-500 text-xs">
+                    <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
                       {company.createdAt
                         ? new Date(company.createdAt).toLocaleDateString()
                         : "—"}
+                    </td>
+                    <td className="px-2 py-3 w-10" onClick={e => e.stopPropagation()}>
+                      <button
+                        onClick={() => deleteCompany(company._id, company.name)}
+                        className="p-1 rounded text-gray-200 hover:text-red-500 hover:bg-red-50 transition-colors opacity-0 group-hover/row:opacity-100"
+                        title="Poista yritys"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
                     </td>
                   </tr>
                 );
