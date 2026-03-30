@@ -3,6 +3,7 @@ import { auth } from "@/libs/auth";
 import connectMongo from "@/libs/mongoose";
 import Call from "@/models/crm/Call";
 import "@/models/crm/Contact";
+import "@/models/crm/Company";
 import "@/models/crm/Deal";
 import "@/models/User";
 

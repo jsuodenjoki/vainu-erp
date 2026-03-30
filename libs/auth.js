@@ -33,6 +33,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const isValid = await bcrypt.compare(credentials.password, user.password);
         if (!isValid) throw new Error("invalid-credentials");
 
+        // Block login until email is verified
+        if (!user.emailVerified) {
+          throw new Error(`unverified:${user.email}`);
+        }
+
         return { id: user._id.toString(), email: user.email, name: user.name, image: user.image };
       },
     }),

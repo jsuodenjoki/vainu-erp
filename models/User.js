@@ -44,6 +44,8 @@ const userSchema = mongoose.Schema(
     googleRefreshToken: { type: String, private: true },
     googleTokenExpiry: { type: Number },
     googleConnected: { type: Boolean, default: false },
+    emailVerificationToken: { type: String, private: true },
+    emailVerificationExpires: { type: Date, private: true },
   },
   {
     timestamps: true,

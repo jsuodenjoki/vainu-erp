@@ -1,19 +1,18 @@
 "use client";
 
 import { useState, Suspense } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { EyeIcon, EyeSlashIcon, EnvelopeIcon } from "@heroicons/react/24/outline";
 import { useI18n } from "@/components/I18nProvider";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 function SignUpContent() {
   const { t } = useI18n();
-  const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,13 +48,44 @@ function SignUpContent() {
         return;
       }
 
-      router.push("/login?registered=1");
+      setRegisteredEmail(email);
     } catch (err) {
       setError(t("auth.error.accountCreationFailed"));
     } finally {
       setLoading(false);
     }
   };
+
+  if (registeredEmail) {
+    return (
+      <div className="flex min-h-screen flex-col justify-center bg-gradient-to-br from-indigo-50 to-white py-12 sm:px-6 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <Link href="/" className="flex justify-center mb-8">
+            <img src="/logo.png" alt="Vaiku" className="h-10 w-auto object-contain" />
+          </Link>
+          <div className="bg-white py-10 px-6 shadow-lg rounded-lg text-center">
+            <EnvelopeIcon className="h-14 w-14 text-indigo-500 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Tarkista sähköpostisi!</h2>
+            <p className="text-gray-600 mb-2">
+              Lähetimme vahvistusviestin osoitteeseen
+            </p>
+            <p className="font-medium text-indigo-600 mb-6">{registeredEmail}</p>
+            <p className="text-sm text-gray-500 mb-6">
+              Klikkaa sähköpostissa olevaa linkkiä aktivoidaksesi tilisi.
+              Linkki on voimassa 24 tuntia.
+            </p>
+            <p className="text-sm text-gray-500">
+              Ei tullut sähköpostia?{" "}
+              <Link href={`/auth/resend-verification?email=${encodeURIComponent(registeredEmail)}`}
+                className="text-indigo-600 hover:text-indigo-500 font-medium">
+                Lähetä uudelleen
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col justify-center bg-gradient-to-br from-indigo-50 to-white py-12 sm:px-6 lg:px-8 relative">
